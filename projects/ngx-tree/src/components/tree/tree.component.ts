@@ -26,7 +26,8 @@ import {
     TreeUIOptions,
 } from '../../models'
 import { TreeDraggingTargetService } from '../../services/tree-dragging-target.service'
-import { TreeNodeChildrenComponent } from '../tree-node-children/tree-node-children.component'
+// import { TreeNodeChildrenComponent } from '../tree-node-children/tree-node-children.component'
+import { TreeNodeChildrenComponent } from '../tree-node/tree-node.component'
 import { TreeViewportComponent } from '../tree-viewport/tree-viewport.component'
 
 @Component({
@@ -81,11 +82,11 @@ export class TreeComponent implements OnChanges, OnDestroy {
 
     @HostBinding('class.ngx-tree') className = true
 
-    @ContentChild('loadingTemplate',  {static: false}) loadingTemplate: TemplateRef<any>
-    @ContentChild('expanderTemplate',  {static: false}) expanderTemplate: TemplateRef<any>
-    @ContentChild('treeNodeTemplate',  {static: false}) treeNodeTemplate: TemplateRef<any>
-    @ContentChild('treeNodeWrapperTemplate',  {static: false}) treeNodeWrapperTemplate: TemplateRef<any>
-    @ContentChild('treeNodeFullTemplate',  {static: false}) treeNodeFullTemplate: TemplateRef<any>
+    @ContentChild('loadingTemplate') loadingTemplate: TemplateRef<any>
+    @ContentChild('expanderTemplate') expanderTemplate: TemplateRef<any>
+    @ContentChild('treeNodeTemplate') treeNodeTemplate: TemplateRef<any>
+    @ContentChild('treeNodeWrapperTemplate') treeNodeWrapperTemplate: TemplateRef<any>
+    @ContentChild('treeNodeFullTemplate') treeNodeFullTemplate: TemplateRef<any>
 
     @ViewChild('viewport', { static: true }) viewportComponent: TreeViewportComponent
     @ViewChild('root', { static: true }) root: TreeNodeChildrenComponent

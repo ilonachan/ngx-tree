@@ -2,4 +2,4 @@
  * Public API Surface of ngx-tree
  */
 
-export * from './index';
+export * from './ngx-tree.module';

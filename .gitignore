@@ -1,3 +1,4 @@
+/.angular/cache
 # Node
 node_modules
 npm-debug.log
@@ -36,4 +37,3 @@ dist
 docs
 
 yarn-error.log
-package-lock.json

@@ -45,7 +45,7 @@ export class TreeModel {
     /**
      * Current focused node
      */
-    get focusedNode() {
+    get focusedNode(): TreeNode | null {
         return this.focusedNodeId ? this.getNodeById(this.focusedNodeId) : null
     }
 
@@ -190,8 +190,8 @@ export class TreeModel {
      * @param     id  node ID to find
      * @returns   The node, if found - null otherwise
      */
-    getNodeById(id: string) {
-        return this.nodeCache.get(id)
+    getNodeById(id: string): TreeNode | null {
+        return this.nodeCache.get(id) || null
     }
 
     /**
@@ -236,7 +236,7 @@ export class TreeModel {
         return !!this.activeNodeIds.get(node.id)
     }
 
-    isNodeFocused(node: TreeNode) {
+    isNodeFocused(node: TreeNode): boolean {
         return this.focusedNode === node
     }
 

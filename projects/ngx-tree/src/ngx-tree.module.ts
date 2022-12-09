@@ -2,7 +2,8 @@ import { CommonModule } from '@angular/common'
 import { ModuleWithProviders, NgModule } from '@angular/core'
 
 import { TreeLoadingComponent } from './components/tree-loading/tree-loading.component'
-import { TreeNodeChildrenComponent } from './components/tree-node-children/tree-node-children.component'
+import { TreeNodeChildrenComponent } from './components/tree-node/tree-node.component'
+// import { TreeNodeChildrenComponent } from './components/tree-node-children/tree-node-children.component'
 import { TreeNodeContentComponent } from './components/tree-node-content/tree-node-content.component'
 import { TreeNodeDropSlotComponent } from './components/tree-node-drop-slot/tree-node-drop-slot.component'
 import { TreeNodeExpanderComponent } from './components/tree-node-expander/tree-node-expander.component'
@@ -47,7 +48,7 @@ import { TreeVirtualScroll, VIRTUAL_SCROLL_NODE_HEIGHT_QUOTA } from './services/
     ],
 })
 export class NgxTreeModule {
-    static forRoot(): ModuleWithProviders {
+    static forRoot(): ModuleWithProviders<NgxTreeModule> {
         return {
             ngModule: NgxTreeModule,
             providers: [

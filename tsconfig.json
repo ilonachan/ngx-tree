@@ -1,30 +1,36 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
-    "downlevelIteration": true,
-    "importHelpers": true,
-    "module": "esnext",
+    "baseUrl": "./",
     "outDir": "./dist/out-tsc",
-    "baseUrl": "",
+    "forceConsistentCasingInFileNames": true,
+    "strict": false,
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": false,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
     "sourceMap": true,
     "declaration": false,
-    "moduleResolution": "node",
-    "emitDecoratorMetadata": true,
+    "downlevelIteration": true,
     "experimentalDecorators": true,
-    "target": "es2015",
+    "moduleResolution": "node",
+    "importHelpers": true,
+    "target": "es2020",
+    "module": "es2020",
+    "lib": [
+      "es2020",
+      "dom"
+    ],
     "typeRoots": [
       "node_modules/@types"
     ],
-    "lib": [
-      "es2017",
-      "dom"
-    ],
     "paths": {
       "@e-cloud/ngx-tree": [
-        "projects/ngx-tree/src"
+        "projects/ngx-tree/src/ngx-tree.module.ts"
       ],
       "core-js/es7/reflect": ["node_modules/core-js/proposals/reflect-metadata"],
       "core-js/es6/*": ["node_modules/core-js/es/*"]
-    }
+    },
+    "strictPropertyInitialization": false,
   }
 }

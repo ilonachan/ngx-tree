@@ -54,7 +54,7 @@ export class TreeViewportComponent implements OnInit, OnChanges, AfterViewInit, 
     onScroll(event: MouseEvent) {
         this.disableEventsWhenScrolling()
         if (this.virtualScroll.isDisabled()) {
-            return
+            return false
         }
 
         const currentScrollTop = this.elementRef.nativeElement.scrollTop

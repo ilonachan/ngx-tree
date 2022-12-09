@@ -4,6 +4,7 @@ import { TreeNode } from '../models'
 
 @Injectable()
 export class TreeDraggingTargetService extends Subject<TreeNode> {
+
     _draggedElement: TreeNode | null = null
 
     set (draggedElement: TreeNode | null) {
@@ -12,6 +13,10 @@ export class TreeDraggingTargetService extends Subject<TreeNode> {
 
     get () {
         return this._draggedElement
+    }
+
+    constructor() {
+        super();
     }
 
     isDragging() {

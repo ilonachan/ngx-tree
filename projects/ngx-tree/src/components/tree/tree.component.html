@@ -6,7 +6,7 @@
                    #viewport>
   <div *ngIf="!viewport.virtualScroll.isDisabled()"
        class="height-raiser"
-       [style.height.px]="treeModel?.virtualRoot.height"></div>
+       [style.height.px]="treeModel?.virtualRoot?.height"></div>
   <div class="tree-root"
        [class.node-dragging]="treeDraggingTargetService.isDragging()"
        [class.virtual-scroll-disabled]="viewport.virtualScroll.isDisabled()"

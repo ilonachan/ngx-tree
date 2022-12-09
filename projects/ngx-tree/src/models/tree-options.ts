@@ -10,7 +10,7 @@ import { TreeNode } from './tree-node'
  * common functions to handle tree actions
  */
 export interface ActionHandler<T = any> {
-    // tslint:disable-next-line:callable-types
+    // eslint-disable-next-line @typescript-eslint/prefer-function-type
     (tree: TreeModel, node: TreeNode, $event: T, ...args: any[]): void;
 }
 

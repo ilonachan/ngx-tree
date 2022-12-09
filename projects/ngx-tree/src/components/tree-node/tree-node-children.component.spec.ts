@@ -4,7 +4,8 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations'
 
 import { createTreeUIOptions, TreeNode, TreeUIOptions } from '../../models/index'
 import { TreeVirtualScroll, VIRTUAL_SCROLL_NODE_HEIGHT_QUOTA } from '../../services/tree-virtual-scroll.service'
-import { TreeNodeChildrenComponent } from './tree-node-children.component'
+import { TreeNodeChildrenComponent } from './tree-node.component'
+// import { TreeNodeChildrenComponent } from './tree-node-children.component'
 
 @Component({
     selector: 'ngx-tree-node',

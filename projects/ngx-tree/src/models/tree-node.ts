@@ -41,7 +41,7 @@ export class TreeNode {
         return this.treeModel.isNodeActive(this)
     }
 
-    get isFocused() {
+    get isFocused(): boolean {
         return this.treeModel.isNodeFocused(this)
     }
 
