@@ -4,12 +4,9 @@
   "description": "A derived version of angular-tree-component without mobx. Much Better performance.",
   "repository": {
     "type": "git",
-    "url": "https://github.com/beezeelinx/ngx-tree"
+    "url": "git+https://github.com/beezeelinx/ngx-tree.git"
   },
-  "author": {
-    "name": "BeeZeeLinx",
-    "email": "contact@beezeelinx.com"
-  },
+  "author": "BeeZeeLinx <contact@beezeelinx.com>",
   "keywords": [
     "Angular",
     "tree",
@@ -38,5 +35,6 @@
     "lodash-es": "^4.17.4",
     "rxjs": "~7.5.0",
     "zone.js": "~0.11.4"
-  }
+  },
+  "homepage": "https://github.com/beezeelinx/ngx-tree#readme"
 }
