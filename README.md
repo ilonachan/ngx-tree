@@ -1,9 +1,9 @@
 # ngx-tree [DEMO](https://e-cloud.github.io/ngx-tree/docs/demo)
 
 <p align="center">
-  <a href="https://travis-ci.org/e-cloud/ngx-tree?branch=master"><img src="https://travis-ci.org/e-cloud/ngx-tree.svg?branch=master" alt="Travis Status"></a>
-  <a href="https://www.npmjs.com/package/@e-cloud/ngx-tree"><img src="https://img.shields.io/npm/v/@e-cloud/ngx-tree.svg" alt="Version"></a>
-  <a href="https://www.npmjs.com/package/@e-cloud/ngx-tree"><img src="https://img.shields.io/npm/l/@e-cloud/ngx-tree.svg" alt="License"></a>
+  <!-- <a href="https://travis-ci.org/e-cloud/ngx-tree?branch=master"><img src="https://travis-ci.org/e-cloud/ngx-tree.svg?branch=master" alt="Travis Status"></a> -->
+  <a href="https://www.npmjs.com/package/@beezeelinx/ngx-tree"><img src="https://img.shields.io/npm/v/@beezeelinx/ngx-tree.svg" alt="Version"></a>
+  <a href="https://www.npmjs.com/package/@beezeelinx/ngx-tree"><img src="https://img.shields.io/npm/l/@beezeelinx/ngx-tree.svg" alt="License"></a>
   <br>
 </p>
 
@@ -16,7 +16,7 @@ This module derivates from [angular-tree-component](https://github.com/500tech/a
 To install this library, run:
 
 ```bash
-$ npm install @e-cloud/ngx-tree --save
+$ npm install @beezeelinx/ngx-tree --save
 ```
 
 > NOTE: we use [Element.closest](https://developer.mozilla.org/docs/Web/API/Element/closest), If you want to compromise
@@ -36,7 +36,7 @@ import { NgModule } from '@angular/core';
 import { AppComponent } from './app.component';
 
 // Import your library
-import { NgxTreeModule } from '@e-cloud/ngx-tree';
+import { NgxTreeModule } from '@beezeelinx/ngx-tree';
 
 @NgModule({
   declarations: [
