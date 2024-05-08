@@ -155,7 +155,7 @@ export class TreeNode {
 
     onDrop($event: DragAndDropEvent) {
         this.mouseAction('drop', $event.event, {
-            from: $event.element,
+            from: $event.from,
             to: { parent: this, index: 0, dropOnNode: true },
         })
     }

@@ -10,6 +10,7 @@
                          (dblclick)="node.mouseAction('dblClick', $event)"
                          (contextmenu)="node.mouseAction('contextMenu', $event)"
                          (ngxTreeDrop)="node.onDrop($event)"
+                         [ngxTreeDropTarget]="node"
                          (treeDropDragOver)="node.mouseAction('dragOver', $event)"
                          (treeDropDragLeave)="node.mouseAction('dragLeave', $event)"
                          (treeDropDragEnter)="node.mouseAction('dragEnter', $event)"

@@ -36,13 +36,14 @@ export interface ActionMapping {
     };
 }
 
-export type PropType<TObj, TProp extends keyof TObj> = TObj[TProp]
+export type AvailableMouseEvents = keyof Exclude<ActionMapping['mouse'], undefined>
 
-export type AvailableMouseEvents = keyof Exclude<PropType<ActionMapping, 'mouse'>, undefined>
-
+/**
+ * 
+ */
 export interface DropTarget {
     parent: TreeNode
-    index: number
+    index?: number
 }
 
 export type IAllowDropFn = (element: TreeNode, to: DropTarget, $event?: DragEvent) => boolean
@@ -120,7 +121,7 @@ export interface TreeUIOptions {
      * which is caused by some massive tree structure changes, such as `collapseAll()`, `expandAll()`
      * setting this field with a number would be useful for large scale tree, like throttle tailing.
      *
-     * however, it would also caused the tree to be irreponsible for a short while
+     * however, it would also cause the tree to be irreponsive for a short while
      */
     auditViewportUpdate?: number;
 
@@ -157,7 +158,7 @@ export function createTreeUIOptions(rawOpts: RawTreeUIOptions = {}): TreeUIOptio
 }
 
 export type CustomFieldPrefix = 'id' | 'children' | 'display' | 'isExpanded'
-export type CustomFieldNames = 'idField' | 'childrenField' | 'displayField' | 'isExpandedField'
+export type CustomFieldNames = `${CustomFieldPrefix}Field`
 
 export interface TreeDataOptions {
     /**
