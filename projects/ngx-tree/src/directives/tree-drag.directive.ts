@@ -7,8 +7,8 @@ const DRAGGING_TARGET_CLASS = 'ngx-tree-dragging-target'
 @Directive({
     selector: '[ngxTreeDrag]',
 })
-export class TreeDragDirective implements OnChanges {
-    @Input('ngxTreeDrag') draggingTarget: TreeNode
+export class TreeDragDirective<D> implements OnChanges {
+    @Input('ngxTreeDrag') draggingTarget: TreeNode<D>
     @Input() treeDragEnabled: boolean
 
     constructor(

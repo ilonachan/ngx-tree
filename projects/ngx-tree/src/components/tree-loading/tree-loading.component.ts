@@ -7,9 +7,9 @@ import { TreeNode } from '../../models'
     styleUrls: ['./tree-loading.component.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class TreeLoadingComponent {
+export class TreeLoadingComponent<D> {
     @Input() template: TemplateRef<any>
-    @Input() node: TreeNode
+    @Input() node: TreeNode<D>
 
     @HostBinding('class.tree-loading') className = true
 }

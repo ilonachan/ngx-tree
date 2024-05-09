@@ -1,5 +1,5 @@
-import { Component } from '@angular/core'
-import { TreeNode } from '@e-cloud/ngx-tree'
+import { Component } from '@angular/core';
+import { TreeNode } from '@e-cloud/ngx-tree';
 
 @Component({
     selector: 'demo-simple',
@@ -7,10 +7,9 @@ import { TreeNode } from '@e-cloud/ngx-tree'
     styleUrls: ['./simple.component.scss'],
 })
 export class SimpleComponent {
+    title = 'demo';
 
-    title = 'demo'
-
-    nodes: any[]
+    nodes: any[];
 
     asyncChildren = [
         {
@@ -21,36 +20,44 @@ export class SimpleComponent {
             name: 'child2.2',
             subTitle: 'new and improved2',
         },
-    ]
+    ];
 
     customOptions = {
+        accessors: {
+            isExpanded: 'expanded',
+            id: 'uuid',
+        },
         // displayField: 'subTitle',
-        isExpandedField: 'expanded',
-        idField: 'uuid',
+        // isExpandedField: 'expanded',
+        // idField: 'uuid',
         getChildren: this.getChildren.bind(this),
         useVirtualScroll: true,
         referenceItemHeight: 22,
         auditViewportUpdate: 0,
-        allowDrag: (node) => {
+        allowDrag: (from) => {
             // console.log('allowDrag?');
-            return true
+            return true;
         },
-        allowDrop: (node, to) => {
+        // allowDrop: false,
+        allowDrop: (from, to) => {
             // console.log('allowDrop?');
-            if (node.id === to.parent.id || node.parent === to.parent) {
-                return false
+
+            // In this simple setup, dropping on an unloaded async node will delete the dropped node permanently.
+            // Depending on actual application logic this won't be the case, but for this example we guard against it.
+            if(to.parent.hasChildren && !to.parent.children) {
+                return false;
             }
 
-            return true
+            return true;
         },
-    }
+    };
 
     constructor() {
-        this.generateData(4)
+        this.generateData(4);
     }
 
     regenerateData() {
-        this.generateData(Math.floor(Math.random() * 5))
+        this.generateData(Math.floor(Math.random() * 5));
     }
 
     generateData(seed: number) {
@@ -171,38 +178,48 @@ export class SimpleComponent {
                     },
                 ],
             },
-        ]
+        ];
 
         for (let i = 0; i < seed * 5; i++) {
             this.nodes.push({
                 expanded: i === 0,
                 name: `[${seed}]root Dynamic${i}`,
                 subTitle: `[${seed}]root created dynamically ${i}`,
-                children: new Array((i + 1) * seed * 500).fill(null).map((item, n) => ({
-                    name: `[${seed}]child Dynamic${i}.${n}`,
-                    subTitle: `[${seed}]child created dynamically ${i}`,
-                    hasChildren: false,
-                })),
-            })
+                children: new Array((i + 1) * seed * 500)
+                    .fill(null)
+                    .map((item, n) => ({
+                        name: `[${seed}]child Dynamic${i}.${n}`,
+                        subTitle: `[${seed}]child created dynamically ${i}`,
+                        hasChildren: false,
+                    })),
+            });
         }
     }
 
     getChildren(node: TreeNode) {
         return new Promise((resolve, reject) => {
-            setTimeout(() => resolve(this.asyncChildren.map((c) => {
-                return Object.assign({}, c, {
-                    hasChildren: node.level < 5,
-                })
-            })), 1000)
-        })
+            setTimeout(
+                () =>
+                    resolve(
+                        this.asyncChildren.map((c) => {
+                            return Object.assign({}, c, {
+                                hasChildren: node.level < 5,
+                            });
+                        })
+                    ),
+                1000
+            );
+        });
     }
 
     childrenCount(node: TreeNode): string {
-        return node && node.children ? `(${node.children.length})` : ''
+        if (!node) return '';
+        if (node.hasChildren && !node.children) return '(...)';
+        if (!node.children || node.children.length === 0) return '';
+        return `(${node.children.length})`;
     }
 
     log($event) {
-        console.log($event)
+        console.log($event);
     }
-
 }

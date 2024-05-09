@@ -60,7 +60,7 @@ export class TreeVirtualScroll {
         this.nodeHeightAnalytics$.next(data)
     }
 
-    reCalcPositions(treeModel: TreeModel) {
+    reCalcPositions(treeModel: TreeModel<unknown>) {
         // here we reset the root nodes' positions to properly recalculate the positions
         // after some actions like filter
         treeModel.roots.forEach(node => {
@@ -77,7 +77,7 @@ export class TreeVirtualScroll {
         return this.disabled
     }
 
-    scrollIntoView(node: TreeNode, force: boolean, scrollToMiddle = true) {
+    scrollIntoView(node: TreeNode<unknown>, force: boolean, scrollToMiddle = true) {
         if (force || // force scroll to node
             node.position < this.lastScrollTop || // node is above viewport
             node.position + this.averageNodeHeight > this.lastScrollTop + this.currentViewport.height) { // node is below viewport
@@ -89,7 +89,7 @@ export class TreeVirtualScroll {
         return null
     }
 
-    private getPositionAfter(nodes: TreeNode[], startPos: number) {
+    private getPositionAfter(nodes: TreeNode<unknown>[], startPos: number) {
         let position = startPos
 
         nodes.forEach((node) => {
@@ -102,7 +102,7 @@ export class TreeVirtualScroll {
         return position
     }
 
-    private getPositionAfterNode(node: TreeNode, startPos: number, isPrevShadow = false) {
+    private getPositionAfterNode(node: TreeNode<unknown>, startPos: number, isPrevShadow = false) {
         let position = isPrevShadow ? startPos : this.averageNodeHeight + startPos
 
         if (node.children && node.isExpanded) { // TBD: consider loading component as well

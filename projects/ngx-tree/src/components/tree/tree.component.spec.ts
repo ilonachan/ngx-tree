@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, Input } from '@angular/core'
 import { async, ComponentFixture, TestBed } from '@angular/core/testing'
 import { NoopAnimationsModule } from '@angular/platform-browser/animations'
 
-import { TreeModel, TreeNode, TreeUIOptions } from '../../models/index'
+import { TreeModel, TreeNode, TreeUIOptionsInternal } from '../../models/index'
 import { TreeDraggingTargetService } from '../../services/tree-dragging-target.service'
 import { TreeComponent } from './tree.component'
 
@@ -12,7 +12,7 @@ import { TreeComponent } from './tree.component'
 })
 export class FakeTreeNodeChildrenComponent {
 
-    @Input() options: TreeUIOptions
+    @Input() options: TreeUIOptionsInternal<any>
     @Input() node: TreeNode
     @Input() templates: any
     @Input() disableMarginTop = false
@@ -44,8 +44,8 @@ export class FakeTreeViewportComponent {
 }
 
 describe('TreeComponent', () => {
-    let component: TreeComponent
-    let fixture: ComponentFixture<TreeComponent>
+    let component: TreeComponent<any>
+    let fixture: ComponentFixture<TreeComponent<any>>
 
     beforeEach(async(() => {
         TestBed.configureTestingModule({

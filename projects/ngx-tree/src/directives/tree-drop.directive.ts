@@ -16,28 +16,28 @@ import { TreeDraggingTargetService } from '../services/tree-dragging-target.serv
 const DRAG_OVER_CLASS = 'is-dragging-over';
 const DRAG_DISABLED_CLASS = 'is-dragging-over-disabled';
 
-export type AllowDropPredicate = (
-    element: TreeNode | null | undefined,
+export type AllowDropPredicate<D> = (
+    element: TreeNode<D> | null | undefined,
     $event: MouseEvent
 ) => boolean;
 
 @Directive({
     selector: '[ngxTreeDrop]',
 })
-export class TreeDropDirective implements OnDestroy {
-    @Input('ngxTreeDropTarget') target: TreeNode | null;
+export class TreeDropDirective<D> implements OnDestroy {
+    @Input('ngxTreeDropTarget') target: TreeNode<D> | null;
     @Input('ngxTreeDropIndex') index?: number;
 
-    @Output('ngxTreeDrop') onDrop$ = new EventEmitter<DragAndDropEvent>();
+    @Output('ngxTreeDrop') onDrop$ = new EventEmitter<DragAndDropEvent<D>>();
     @Output('treeDropDragOver') onDragOver$ =
-        new EventEmitter<DragAndDropEvent>();
+        new EventEmitter<DragAndDropEvent<D>>();
     @Output('treeDropDragLeave') onDragLeave$ =
-        new EventEmitter<DragAndDropEvent>();
+        new EventEmitter<DragAndDropEvent<D>>();
     @Output('treeDropDragEnter') onDragEnter$ =
-        new EventEmitter<DragAndDropEvent>();
+        new EventEmitter<DragAndDropEvent<D>>();
 
     @Input()
-    set treeAllowDrop(allowDrop: boolean | AllowDropPredicate) {
+    set treeAllowDrop(allowDrop: boolean | AllowDropPredicate<D>) {
         this._allowDrop = isFunction(allowDrop)
             ? allowDrop
             : (element, $event) => allowDrop;
@@ -51,8 +51,8 @@ export class TreeDropDirective implements OnDestroy {
     private disabledClassAdded: boolean;
 
     constructor(
-        @Inject(ElementRef) private el: ElementRef,
-        @Inject(Renderer2) private renderer: Renderer2,
+        private el: ElementRef,
+        private renderer: Renderer2,
         private treeDraggedElement: TreeDraggingTargetService
     ) {}
 
@@ -63,11 +63,11 @@ export class TreeDropDirective implements OnDestroy {
         this.onDragOver$.complete();
     }
 
-    makeEvent($event: DragEvent): DragAndDropEvent {
+    makeEvent($event: DragEvent): DragAndDropEvent<D> {
         return {
             event: $event,
-            element: this.treeDraggedElement.get(),
-            from: this.treeDraggedElement.get(),
+            element: this.treeDraggedElement.get() as TreeNode<D>,
+            from: this.treeDraggedElement.get() as TreeNode<D>,
             to: { parent: this.target, index: this.index },
         };
     }
@@ -130,7 +130,7 @@ export class TreeDropDirective implements OnDestroy {
     }
 
     allowDrop($event: MouseEvent) {
-        return this._allowDrop(this.treeDraggedElement.get(), $event);
+        return this._allowDrop(this.treeDraggedElement.get() as TreeNode<D>, $event);
     }
 
     private _stopEvent(event: Event): void {
@@ -138,7 +138,7 @@ export class TreeDropDirective implements OnDestroy {
         event.stopPropagation();
     }
 
-    private _allowDrop: AllowDropPredicate = (element, $event) => true;
+    private _allowDrop: AllowDropPredicate<D> = (element, $event) => true;
 
     private addClass() {
         this.dragOverClassAdded = true;

@@ -9,9 +9,9 @@ import { TreeEvent, TreeNode, TreeUIOptions } from '../../models'
     styleUrls: ['./tree-node-expander.component.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class TreeNodeExpanderComponent implements OnInit, OnDestroy {
-    @Input() options: TreeUIOptions
-    @Input() node: TreeNode
+export class TreeNodeExpanderComponent<D> implements OnInit, OnDestroy {
+    @Input() options: TreeUIOptions<D>
+    @Input() node: TreeNode<D>
     @Input() index: number
     @Input() template: TemplateRef<any>
 

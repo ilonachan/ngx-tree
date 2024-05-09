@@ -1,142 +1,136 @@
-import compact from 'lodash-es/compact'
-import find from 'lodash-es/find'
-import first from 'lodash-es/first'
-import isFunction from 'lodash-es/isFunction'
-import isString from 'lodash-es/isString'
-import last from 'lodash-es/last'
-import { Observer, Subject } from 'rxjs'
-import { EventsMap, TREE_EVENTS } from '../constants/events'
-import { TreeEvent } from './events'
-import { TreeNode } from './tree-node'
-import { createTreeDataOptions, TreeDataOptions } from './tree-options'
+import compact from 'lodash-es/compact';
+import find from 'lodash-es/find';
+import first from 'lodash-es/first';
+import isFunction from 'lodash-es/isFunction';
+import isString from 'lodash-es/isString';
+import last from 'lodash-es/last';
+import { Observer, Subject } from 'rxjs';
+import { EventType, EventsMap, TREE_EVENTS, TreeEvent, TreeMoveNodeEvent, TreeNodeEvent, TreeToggleExpanderEvent } from './events';
+import { TreeNode, VirtualTreeNode } from './tree-node';
+import { createTreeDataOptions, TreeDataOptions } from './tree-options';
 
-export interface ScrollIntoViewTarget {
-    node: TreeNode
-    force: boolean
-    scrollToMiddle: boolean
+export interface ScrollIntoViewTarget<D> {
+    node: TreeNode<D>;
+    force: boolean;
+    scrollToMiddle: boolean;
 }
 
-export class TreeModel {
+export class TreeModel<D = any> {
     /**
      * static cache for recording the tree model while using multiple tree component in same container.
      */
-    static focusedTree: TreeModel | null = null
+    static focusedTree: TreeModel<unknown> | null = null;
 
     /**
      * a tree node created internally to represent the root node of input data
      */
-    readonly virtualRoot: TreeNode
-    readonly scrollIntoView$: Subject<ScrollIntoViewTarget> = new Subject()
+    readonly virtualRoot: VirtualTreeNode<D>;
+    readonly scrollIntoView$: Subject<ScrollIntoViewTarget<D>> = new Subject();
 
     /**
      * Is the tree currently focused
      */
     get isFocused() {
-        return TreeModel.focusedTree === this
+        return TreeModel.focusedTree === this;
     }
 
     /**
      * if the tree is empty
      */
     get isEmptyTree() {
-        return this.roots && this.roots.length === 0
+        return this.roots && this.roots.length === 0;
     }
 
     /**
      * Current focused node
      */
-    get focusedNode(): TreeNode | null {
-        return this.focusedNodeId ? this.getNodeById(this.focusedNodeId) : null
+    get focusedNode(): TreeNode<D> | null {
+        return this.focusedNodeId ? this.getNodeById(this.focusedNodeId) : null;
     }
 
     /**
      * @returns Current expanded nodes
      */
-    get expandedNodes(): TreeNode[] {
+    get expandedNodes(): TreeNode<D>[] {
         const nodes = Array.from(this.expandedNodeIds.keys())
             .filter((id) => this.expandedNodeIds.get(id))
-            .map((id) => this.getNodeById(id))
+            .map((id) => this.getNodeById(id));
 
-        return compact(nodes)
+        return compact(nodes);
     }
 
     /**
      * @returns Current active (selected) nodes
      */
-    get activeNodes(): TreeNode[] {
+    get activeNodes(): TreeNode<D>[] {
         const nodes = Array.from(this.activeNodeIds.keys())
             .filter((id) => this.activeNodeIds.get(id))
-            .map((id) => this.nodeCache.get(id))
+            .map((id) => this.nodeCache.get(id));
 
-        return compact(nodes)
+        return compact(nodes);
     }
 
     /**
      * All root nodes, it will have one item if a user input a single root tree.
      */
-    get roots(): TreeNode[] {
-        return this.virtualRoot.children
+    get roots(): TreeNode<D>[] {
+        return this.virtualRoot.children;
     }
 
-    options: TreeDataOptions
+    options: TreeDataOptions<D>;
 
-    private focusedNodeId: string | null = null
-    private expandedNodeIds: Map<string, boolean> = new Map()
-    private activeNodeIds: Map<string, boolean> = new Map()
-    private hiddenNodeIds: Map<string, boolean> = new Map()
-    private nodeCache: Map<string, TreeNode> = new Map()
+    private focusedNodeId: string | null = null;
+    private expandedNodeIds: Map<string, boolean> = new Map();
+    private activeNodeIds: Map<string, boolean> = new Map();
+    private hiddenNodeIds: Map<string, boolean> = new Map();
+    private nodeCache: Map<string, TreeNode<D>> = new Map();
 
     constructor(
         private nodes: any[],
-        public events: EventsMap,
+        public events: EventsMap<D>,
         /**
          * Options that are passed to the tree component
          */
-        options?: TreeDataOptions,
+        options?: TreeDataOptions<D>
     ) {
-        this.options = createTreeDataOptions(options)
-        const virtualRootConfig = {
-            virtual: true,
-            // todo: determine to use fixed children field later
-            [this.options.childrenField!]: this.nodes,
-        }
+        this.options = createTreeDataOptions(options);
 
-        this.virtualRoot = new TreeNode(virtualRootConfig, null, this, 0)
-        this.setExpandedNodeInPlace(this.virtualRoot)
+        this.virtualRoot = new VirtualTreeNode(this.nodes, this);
+        this.setExpandedNodeInPlace(this.virtualRoot);
     }
 
-    addCache(node: TreeNode) {
-        this.nodeCache.set(node.id, node)
+    addCache(node: TreeNode<D>) {
+        this.nodeCache.set(node.id, node);
     }
 
-    updateOptions(options: TreeDataOptions) {
-        this.options = options
+    updateOptions(options: TreeDataOptions<D>) {
+        this.options = createTreeDataOptions(options);
     }
 
     // events
-    fireEvent(event: TreeEvent) {
+    fireEvent(event: TreeEvent | TreeNodeEvent<any>) {
         // event.treeModel = this
 
-        this.events[<keyof EventsMap>event.eventName].emit(event)
+        this.events[<keyof EventsMap<any>>event.eventName].emit(event as any);
     }
 
     subscribe(eventName: string, fn: Observer<TreeEvent>) {
-        return this.events[<keyof EventsMap>eventName].subscribe(fn)
+        return this.events[<keyof EventsMap<any>>eventName].subscribe(fn);
     }
 
     // getters
     /**
      * @returns Current active (selected) node. If multiple nodes are active - returns the first one.
      */
-    getActiveNode(): TreeNode {
-        return this.activeNodes[0]
+    getActiveNode(): TreeNode<D> {
+        return this.activeNodes[0];
     }
 
     /**
      * @returns All root nodes that pass the current filter
      */
     getVisibleRoots() {
-        return this.virtualRoot.visibleChildren
+        return this.virtualRoot.visibleChildren;
     }
 
     /**
@@ -144,7 +138,7 @@ export class TreeModel {
      * @returns      first root of the tree
      */
     getFirstRoot(skipHidden = false) {
-        return first(skipHidden ? this.getVisibleRoots() : this.roots)
+        return first(skipHidden ? this.getVisibleRoots() : this.roots);
     }
 
     /**
@@ -152,7 +146,7 @@ export class TreeModel {
      * @returns      last root of the tree
      */
     getLastRoot(skipHidden = false) {
-        return last(skipHidden ? this.getVisibleRoots() : this.roots)
+        return last(skipHidden ? this.getVisibleRoots() : this.roots);
     }
 
     // locating nodes
@@ -161,37 +155,42 @@ export class TreeModel {
      * @param     startNode  optional. Which node to start traversing from
      * @returns   The node, if found - null otherwise
      */
-    getNodeByPath(path: (string | number)[], startNode: TreeNode | null = null): TreeNode | null {
+    getNodeByPath(
+        path: (string | number)[],
+        startNode: TreeNode<D> | null = null
+    ): TreeNode<D> | null {
         if (!path) {
-            return null
+            return null;
         }
 
-        startNode = startNode || this.virtualRoot
+        startNode = startNode || this.virtualRoot;
 
         if (path.length === 0) {
-            return startNode
+            return startNode;
         }
 
         if (!startNode.children) {
-            return null
+            return null;
         }
 
-        const childId = path.shift()
-        const childNode = find<TreeNode>(startNode.children, { id: childId } as any)
+        const childId = path.shift();
+        const childNode = find<TreeNode<D>>(startNode.children, {
+            id: childId,
+        } as any);
 
         if (!childNode) {
-            return null
+            return null;
         }
 
-        return this.getNodeByPath(path, childNode)
+        return this.getNodeByPath(path, childNode);
     }
 
     /**
      * @param     id  node ID to find
      * @returns   The node, if found - null otherwise
      */
-    getNodeById(id: string): TreeNode | null {
-        return this.nodeCache.get(id) || null
+    getNodeById(id: string): TreeNode<D> | null {
+        return this.nodeCache.get(id) || null;
     }
 
     /**
@@ -200,85 +199,94 @@ export class TreeModel {
      * @param     startNode  optional. Which node to start traversing from
      * @returns   First node that matches the predicate, if found - null otherwise
      */
-    getNodeBy(predicate: (node: TreeNode) => boolean, startNode: TreeNode | null = null): TreeNode | null {
+    getNodeBy(
+        predicate: (node: TreeNode<D>) => boolean,
+        startNode: TreeNode<D> | null = null
+    ): TreeNode<D> | null {
         // todo: refactor to a loop
-        startNode = startNode || this.virtualRoot
+        startNode = startNode || this.virtualRoot;
 
         if (!startNode.children) {
-            return null
+            return null;
         }
 
-        const found = find(startNode.children, predicate)
+        const found = find(startNode.children, predicate);
 
-        if (found) { // found in children
-            return found
-        } else { // look in children's children
+        if (found) {
+            // found in children
+            return found;
+        } else {
+            // look in children's children
             for (const child of startNode.children) {
-                const foundInChildren = this.getNodeBy(predicate, child)
+                const foundInChildren = this.getNodeBy(predicate, child);
                 if (foundInChildren) {
-                    return foundInChildren
+                    return foundInChildren;
                 }
             }
         }
 
-        return null
+        return null;
     }
 
-    isNodeExpanded(node: TreeNode) {
-        return !!this.expandedNodeIds.get(node.id)
+    isNodeExpanded(node: TreeNode<D>) {
+        return !!this.expandedNodeIds.get(node.id);
     }
 
-    isNodeHidden(node: TreeNode) {
-        return !!this.hiddenNodeIds.get(node.id)
+    isNodeHidden(node: TreeNode<D>) {
+        return !!this.hiddenNodeIds.get(node.id);
     }
 
-    isNodeActive(node: TreeNode) {
-        return !!this.activeNodeIds.get(node.id)
+    isNodeActive(node: TreeNode<D>) {
+        return !!this.activeNodeIds.get(node.id);
     }
 
-    isNodeFocused(node: TreeNode): boolean {
-        return this.focusedNode === node
+    isNodeFocused(node: TreeNode<D>): boolean {
+        return this.focusedNode === node;
     }
 
-    setActiveNode(node: TreeNode, isActive: boolean, isMulti = false) {
+    setActiveNode(node: TreeNode<D>, isActive: boolean, isMulti = false) {
         if (isMulti) {
-            this.setMultiActiveNodes(node, isActive)
+            this.setMultiActiveNodes(node, isActive);
         } else {
-            this.setSingleActiveNode(node, isActive)
+            this.setSingleActiveNode(node, isActive);
         }
 
         if (isActive) {
-            node.focus()
-            this.fireEvent({ eventName: TREE_EVENTS.activate, node })
+            node.focus();
+            this.fireEvent({ eventName: TREE_EVENTS.activate, node });
         } else {
-            this.fireEvent({ eventName: TREE_EVENTS.deactivate, node })
+            this.fireEvent({ eventName: TREE_EVENTS.deactivate, node });
         }
     }
 
-    setExpandedNodeInPlace(node: TreeNode, isExpanded = true) {
-        this.expandedNodeIds.set(node.id, isExpanded)
+    setExpandedNodeInPlace(node: TreeNode<D>, isExpanded = true) {
+        this.expandedNodeIds.set(node.id, isExpanded);
     }
 
-    setExpandedNode(node: TreeNode, isExpanded = true) {
-        this.expandedNodeIds.set(node.id, isExpanded)
+    setExpandedNode(node: TreeNode<D>, isExpanded = true) {
+        this.expandedNodeIds.set(node.id, isExpanded);
         if (isExpanded) {
-            this.fireEvent({ eventName: TREE_EVENTS.expand, node })
+            this.fireEvent({ eventName: TREE_EVENTS.expand, node });
         } else {
-            this.fireEvent({ eventName: TREE_EVENTS.collapse, node })
+            this.fireEvent({ eventName: TREE_EVENTS.collapse, node });
         }
-        this.fireEvent({ eventName: TREE_EVENTS.toggleExpander, node, isExpanded })
+        this.fireEvent({
+            eventName: TREE_EVENTS.toggleExpander,
+            node,
+            isExpanded,
+        } as TreeToggleExpanderEvent<D>);
     }
 
-    setHiddenNode(node: TreeNode, isHidden = true) {
-        this.hiddenNodeIds.set(node.id, isHidden)
+    setHiddenNode(node: TreeNode<D>, isHidden = true) {
+        this.hiddenNodeIds.set(node.id, isHidden);
     }
 
     /**
      * Set focus on a node
      * @param node
      */
-    setFocusedNode(node: TreeNode | null) {
-        this.focusedNodeId = node ? node.id : null
+    setFocusedNode(node: TreeNode<D> | null) {
+        this.focusedNodeId = node ? node.id : null;
     }
 
     /**
@@ -286,43 +294,46 @@ export class TreeModel {
      * @param value  true or false - whether to set focus or blur.
      */
     setFocus(value: boolean) {
-        TreeModel.focusedTree = value ? this : null
+        TreeModel.focusedTree = value ? this : null;
     }
 
-    traverse(fn: (node: TreeNode) => any) {
-        this.roots.forEach((root) => root.traverse(fn))
+    traverse(fn: (node: TreeNode<D>) => any) {
+        // TODO: this does literally nothing
+        this.roots.forEach((root) => root.traverse(fn));
     }
 
     activateNode(id: string) {
-        const target = this.getNodeById(id)
+        const target = this.getNodeById(id);
         if (target) {
-            target.setActiveAndVisible()
+            target.setActiveAndVisible();
 
-            return true
+            return true;
         }
 
-        return false
+        return false;
     }
 
     focusNode(id: string) {
-        const target = this.getNodeById(id)
+        const target = this.getNodeById(id);
         if (target) {
-            target.focus()
+            target.focus();
 
-            return true
+            return true;
         }
 
-        return false
+        return false;
     }
 
     /**
      * Focuses on the next node in the tree (same as down arrow)
      */
     focusNextNode() {
-        const previousNode = this.focusedNode
-        const nextNode = previousNode ? previousNode.findNextNode(true, true) : this.getFirstRoot(true)
+        const previousNode: TreeNode<D> | null = this.focusedNode;
+        const nextNode: TreeNode<D> | null = previousNode
+            ? previousNode.findNextNode(true, true)
+            : this.getFirstRoot(true);
         if (nextNode) {
-            nextNode.focus()
+            nextNode.focus();
         }
     }
 
@@ -330,10 +341,12 @@ export class TreeModel {
      * Focuses on the previous node in the tree (same as up arrow)
      */
     focusPreviousNode() {
-        const previousNode = this.focusedNode
-        const nextNode = previousNode ? previousNode.findPreviousNode(true) : this.getLastRoot(true)
+        const previousNode = this.focusedNode;
+        const nextNode = previousNode
+            ? previousNode.findPreviousNode(true)
+            : this.getLastRoot(true);
         if (nextNode) {
-            nextNode.focus()
+            nextNode.focus();
         }
     }
 
@@ -341,13 +354,19 @@ export class TreeModel {
      * Focuses on the inner child of the current focused node (same as right arrow on an expanded node)
      */
     focusDrillDown() {
-        const previousNode = this.focusedNode
-        if (previousNode && previousNode.isCollapsed && previousNode.hasChildren) {
-            previousNode.toggleExpanded()
+        const previousNode = this.focusedNode;
+        if (
+            previousNode &&
+            previousNode.isCollapsed &&
+            previousNode.hasChildren
+        ) {
+            previousNode.toggleExpanded();
         } else {
-            const nextNode = previousNode ? previousNode.getFirstChild(true) : this.getFirstRoot(true)
+            const nextNode = previousNode
+                ? previousNode.getFirstChild(true)
+                : this.getFirstRoot(true);
             if (nextNode) {
-                nextNode.focus()
+                nextNode.focus();
             }
         }
     }
@@ -356,17 +375,17 @@ export class TreeModel {
      * Focuses on the parent of the current focused node (same as left arrow on a collapsed node)
      */
     focusDrillUp() {
-        const previousNode = this.focusedNode
+        const previousNode = this.focusedNode;
         if (!previousNode) {
-            return
+            return;
         }
 
         if (previousNode.isExpanded) {
-            previousNode.collapse()
+            previousNode.collapse();
         } else {
-            const nextNode = previousNode.parent
+            const nextNode = previousNode.parent;
             if (nextNode) {
-                nextNode.focus()
+                nextNode.focus();
             }
         }
     }
@@ -375,26 +394,26 @@ export class TreeModel {
      * expand all nodes
      */
     expandAll() {
-        this.roots.forEach((root) => root.expandAll())
+        this.roots.forEach((root) => root.expandAll());
     }
 
     /**
      * collapse all nodes
      */
     collapseAll() {
-        this.roots.forEach((root) => root.collapseAll())
+        this.roots.forEach((root) => root.collapseAll());
     }
 
-    performKeyAction(node: TreeNode, $event: KeyboardEvent) {
+    performKeyAction(node: TreeNode<D>, $event: KeyboardEvent) {
         // todo: the keyCode is deprecated on MDN, replace it some day
-        const action = this.options.actionMapping!.keys![$event.keyCode]
+        const action = this.options.actionMapping!.keys![$event.keyCode];
         if (action) {
-            $event.preventDefault()
-            action(this, node, $event)
+            $event.preventDefault();
+            action(this, node, $event);
 
-            return true
+            return true;
         } else {
-            return false
+            return false;
         }
     }
 
@@ -407,34 +426,42 @@ export class TreeModel {
      *     false otherwise
      * @param autoShow  if true, make sure all nodes that passed the filter are visible
      */
-    filterNodes(filter: string | ((node: TreeNode) => boolean), autoShow = true) {
-        let filterFn: any
+    filterNodes(
+        filter: string | ((node: TreeNode<D>) => boolean),
+        autoShow = true
+    ) {
+        let filterFn: any;
 
         if (!filter) {
-            return this.clearFilter()
+            return this.clearFilter();
         }
 
         // support function and string filter
         if (isString(filter)) {
-            filterFn = (node: TreeNode) => node.displayField.toLowerCase().includes(filter.toLowerCase())
+            filterFn = (node: TreeNode<D>) =>
+                node.displayField.toLowerCase().includes(filter.toLowerCase());
         } else if (isFunction(filter)) {
-            filterFn = filter
+            filterFn = filter;
         } else {
-            throw new TypeError(`Don't know what to do with filter: ${filter}. It should be either a string or function`)
+            throw new TypeError(
+                `Don't know what to do with filter: ${filter}. It should be either a string or function`
+            );
         }
 
-        const ids = new Map()
-        this.roots.forEach((node) => this.filterNode(ids, node, filterFn, autoShow))
-        this.hiddenNodeIds = ids
-        this.fireEvent({ eventName: TREE_EVENTS.changeFilter })
+        const ids = new Map();
+        this.roots.forEach((node) =>
+            this.filterNode(ids, node, filterFn, autoShow)
+        );
+        this.hiddenNodeIds = ids;
+        this.fireEvent({ eventName: TREE_EVENTS.changeFilter });
     }
 
     /**
      * Marks all nodes isHidden = false
      */
     clearFilter() {
-        this.hiddenNodeIds = new Map()
-        this.fireEvent({ eventName: TREE_EVENTS.changeFilter })
+        this.hiddenNodeIds = new Map();
+        this.fireEvent({ eventName: TREE_EVENTS.changeFilter });
     }
 
     /**
@@ -443,94 +470,110 @@ export class TreeModel {
      * The combination of node + index tells which node needs to be moved, and to where
      * @param to
      */
-    moveNode(node: TreeNode, to: { parent: TreeNode, index: number, dropOnNode: boolean }) {
-        const fromIndex = node.index
-        const fromParent = node.parent
+    moveNode(
+        node: TreeNode<D>,
+        to: { parent: TreeNode<D>; index: number; dropOnNode: boolean }
+    ) {
+        const fromIndex = node.index;
+        const fromParent = node.parent;
 
         if (!canMoveNode(node, fromIndex, to)) {
-            return
+            return;
         }
 
-        node.remove()
+        node.remove();
 
         // Compensate for index if already removed from parent:
-        const toIndex = (fromParent === to.parent && to.index > fromIndex) ? to.index - 1 : to.index
+        const toIndex =
+            fromParent === to.parent && to.index > fromIndex
+                ? to.index - 1
+                : to.index;
 
         if (to.dropOnNode) {
-            to.parent.appendChild(node.data)
+            to.parent.appendChild(node.data);
         } else {
-            to.parent.addChild(node.data, toIndex)
+            to.parent.addChild(node.data, toIndex);
         }
 
         this.fireEvent({
             eventName: TREE_EVENTS.moveNode,
             node,
-            to: { parent: to.parent.data, index: toIndex },
-        })
+            to: { parent: to.parent, index: toIndex },
+        } as TreeMoveNodeEvent<D>);
     }
 
-    scrollIntoView(node: TreeNode, force: boolean, scrollToMiddle = true) {
+    scrollIntoView(node: TreeNode<D>, force: boolean, scrollToMiddle = true) {
         this.scrollIntoView$.next({
-            node, force, scrollToMiddle,
-        })
+            node,
+            force,
+            scrollToMiddle,
+        });
     }
 
     private filterNode(
         ids: Map<string, boolean>,
-        node: TreeNode,
-        filterFn: (node: TreeNode) => boolean,
-        autoExpand: boolean,
+        node: TreeNode<D>,
+        filterFn: (node: TreeNode<D>) => boolean,
+        autoExpand: boolean
     ) {
         // if node passes function then it's visible
-        let isVisible = filterFn(node)
+        let isVisible = filterFn(node);
 
         if (node.children) {
             // if one of node's children passes filter then this node is also visible
             node.children.forEach((child) => {
                 if (this.filterNode(ids, child, filterFn, autoExpand)) {
-                    isVisible = true
+                    isVisible = true;
                 }
-            })
+            });
         }
 
         // mark node as hidden
         if (!isVisible) {
-            ids.set(node.id, true)
+            ids.set(node.id, true);
         }
 
         // auto expand parents to make sure the filtered nodes are visible
         if (autoExpand && isVisible) {
-            node.ensureVisible()
+            node.ensureVisible();
         }
 
-        return isVisible
+        return isVisible;
     }
 
-    private setSingleActiveNode(node: TreeNode, active: boolean) {
+    private setSingleActiveNode(node: TreeNode<D>, active: boolean) {
         // Deactivate all other nodes:
         this.activeNodes
             .filter((activeNode) => activeNode !== node)
             .forEach((activeNode) => {
-                this.fireEvent({ eventName: TREE_EVENTS.deactivate, node: activeNode })
-            })
+                this.fireEvent({
+                    eventName: TREE_EVENTS.deactivate,
+                    node: activeNode,
+                });
+            });
 
         if (active) {
-            this.activeNodeIds = new Map([[node.id, true]])
+            this.activeNodeIds = new Map([[node.id, true]]);
         } else {
-            this.activeNodeIds = new Map()
+            this.activeNodeIds = new Map();
         }
     }
 
-    private setMultiActiveNodes(node: TreeNode, active: boolean) {
-        this.activeNodeIds.set(node.id, active)
+    private setMultiActiveNodes(node: TreeNode<D>, active: boolean) {
+        this.activeNodeIds.set(node.id, active);
     }
 }
 
-function canMoveNode(node: TreeNode, fromIndex: number, to: { parent: TreeNode, index: number }) {
+// TODO: this logic might have been redone in a few places
+function canMoveNode<D>(
+    node: TreeNode<D>,
+    fromIndex: number,
+    to: { parent: TreeNode<D>; index: number }
+) {
     // same node:
     if (node.parent === to.parent && fromIndex === to.index) {
-        return false
+        return false;
     }
 
-    return !to.parent.isDescendantOf(node)
+    return !to.parent.isDescendantOf(node);
 }

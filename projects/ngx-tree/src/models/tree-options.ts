@@ -1,75 +1,87 @@
-import defaults from 'lodash-es/defaults'
-import defaultsDeep from 'lodash-es/defaultsDeep'
-import isNumber from 'lodash-es/isNumber'
-import { defaultActionMapping } from './actions'
-import { DragAndDropEvent } from './events'
-import { TreeModel } from './tree-model'
-import { TreeNode } from './tree-node'
+import defaults from 'lodash-es/defaults';
+import defaultsDeep from 'lodash-es/defaultsDeep';
+import isNumber from 'lodash-es/isNumber';
+import { defaultActionMapping } from './actions';
+import { DragAndDropEvent } from './events';
+import { TreeModel } from './tree-model';
+import { TreeNode } from './tree-node';
+import { isFunction, isString } from 'lodash-es';
 
 /**
  * common functions to handle tree actions
  */
-export interface ActionHandler<T = any> {
+export interface ActionHandler<D, T = any> {
     // eslint-disable-next-line @typescript-eslint/prefer-function-type
-    (tree: TreeModel, node: TreeNode, $event: T, ...args: any[]): void;
+    (tree: TreeModel<D>, node: TreeNode<D>, $event: T, ...args: any[]): void;
 }
 
 /**
  * a mapping model to link mouse events and keyboard events with actions
  */
-export interface ActionMapping {
+export interface ActionMapping<D> {
     mouse?: {
-        click?: ActionHandler<MouseEvent>,
-        dblClick?: ActionHandler<MouseEvent>,
-        contextMenu?: ActionHandler<MouseEvent>,
-        expanderClick?: ActionHandler<MouseEvent>,
-        dragStart?: ActionHandler<DragAndDropEvent>,
-        drag?: ActionHandler<DragAndDropEvent>,
-        dragEnd?: ActionHandler<DragAndDropEvent>,
-        dragOver?: ActionHandler<DragAndDropEvent>,
-        dragLeave?: ActionHandler<DragAndDropEvent>,
-        dragEnter?: ActionHandler<DragAndDropEvent>,
-        drop?: ActionHandler<DragAndDropEvent>,
+        click?: ActionHandler<D, MouseEvent>;
+        dblClick?: ActionHandler<D, MouseEvent>;
+        contextMenu?: ActionHandler<D, MouseEvent>;
+        expanderClick?: ActionHandler<D, MouseEvent>;
+        dragStart?: ActionHandler<D, DragAndDropEvent<D>>;
+        drag?: ActionHandler<D, DragAndDropEvent<D>>;
+        dragEnd?: ActionHandler<D, DragAndDropEvent<D>>;
+        dragOver?: ActionHandler<D, DragAndDropEvent<D>>;
+        dragLeave?: ActionHandler<D, DragAndDropEvent<D>>;
+        dragEnter?: ActionHandler<D, DragAndDropEvent<D>>;
+        drop?: ActionHandler<D, DragAndDropEvent<D>>;
     };
     keys?: {
-        [key: number]: ActionHandler<KeyboardEvent>
+        [key: number]: ActionHandler<D, KeyboardEvent>;
     };
 }
 
-export type AvailableMouseEvents = keyof Exclude<ActionMapping['mouse'], undefined>
+export type AvailableMouseEvents = keyof Exclude<
+    ActionMapping<any>['mouse'],
+    undefined
+>;
 
 /**
- * 
+ *
  */
-export interface DropTarget {
-    parent: TreeNode
-    index?: number
+export interface DropTarget<D> {
+    parent: TreeNode<D>;
+    index?: number;
 }
 
-export type IAllowDropFn = (element: TreeNode, to: DropTarget, $event?: DragEvent) => boolean
+export type IAllowDropFn<D> = (
+    element: TreeNode<D>,
+    to: DropTarget<D>,
+    $event?: DragEvent
+) => boolean;
 
-export type IAllowDragFn = (node: TreeNode) => boolean
+export type IAllowDragFn<D> = (node: TreeNode<D>) => boolean;
 
-export type ILevelPaddingFn = (node: TreeNode) => string
+export type ILevelPaddingFn<D> = (node: TreeNode<D>) => string;
+export type INodeClassFn<D> = (node: TreeNode<D>) => string;
 
-export const defaultUIOptions: TreeUIOptions = {
+export const defaultUIOptions: TreeUIOptions<unknown> = {
     allowDrag: false,
     allowDrop: false,
-    levelPadding: () => '0px',
+    levelPadding: 0,
     useVirtualScroll: false,
-    nodeClass: () => '',
-}
+    nodeClass: '',
+};
 
-export const defaultDataOptions: TreeDataOptions = {
-    childrenField: 'children',
-    displayField: 'name',
-    idField: 'id',
-    isExpandedField: 'isExpanded',
+export const defaultDataOptions: TreeDataOptions<unknown> = {
+    accessors: {
+        id: 'id',
+        children: 'children',
+        hasChildren: 'hasChildren',
+        display: 'name',
+        isExpanded: 'isExpanded',
+    },
     actionMapping: defaultActionMapping,
-    getChildren: (node: TreeNode) => Promise.resolve([]),
-}
+    getChildren: (node: TreeNode<unknown>) => Promise.resolve([]),
+};
 
-export interface TreeUIOptions {
+export interface TreeUIOptions<D = any> {
     /**
      * Specify if dragging tree nodes is allowed.
      * This could be a boolean, or a function that receives a TreeNode and returns a boolean
@@ -83,7 +95,7 @@ export interface TreeUIOptions {
      * }
      * ```
      */
-    allowDrag?: boolean | IAllowDragFn;
+    allowDrag?: boolean | IAllowDragFn<D>;
     /**
      * Specify whether dropping inside the tree is allowed. Optional types:
      *  - boolean
@@ -100,11 +112,11 @@ export interface TreeUIOptions {
      * }
      * ```
      */
-    allowDrop?: boolean | IAllowDropFn;
+    allowDrop?: boolean | IAllowDropFn<D>;
     /**
      * Specify padding per node instead of children padding (to allow full row select for example)
      */
-    levelPadding?: ILevelPaddingFn;
+    levelPadding?: number | ILevelPaddingFn<D>;
     /**
      * Boolean whether virtual scroll should be used.
      * Increases performance for large trees
@@ -128,72 +140,185 @@ export interface TreeUIOptions {
     /**
      * Supply function for getting a custom class for the node component
      */
-    nodeClass?(node: TreeNode): string;
+    nodeClass?: string | INodeClassFn<D>;
 }
 
-export interface RawTreeUIOptions {
-    allowDrag?: boolean | IAllowDragFn;
-    allowDrop?: boolean | IAllowDropFn;
-    levelPadding?: number | ILevelPaddingFn;
-    useVirtualScroll?: boolean;
-    referenceItemHeight?: number;
-    auditViewportUpdate?: number;
-
-    nodeClass?(node: TreeNode): string;
+export interface TreeUIOptionsInternal<D> extends TreeUIOptions<D> {
+    allowDrag: IAllowDragFn<D> | boolean;
+    allowDrop: IAllowDropFn<D> | boolean;
+    levelPadding: ILevelPaddingFn<D>;
+    nodeClass: INodeClassFn<D>;
+    useVirtualScroll: boolean;
 }
 
 /**
  * create tree options about UI with defaults
  * @param rawOpts
  */
-export function createTreeUIOptions(rawOpts: RawTreeUIOptions = {}): TreeUIOptions {
-    const levelPaddingOpt = rawOpts.levelPadding
-    if (isNumber(levelPaddingOpt)) {
-        rawOpts.levelPadding = function (node: TreeNode) {
-            return (levelPaddingOpt + levelPaddingOpt * (node.level - 1)) + 'px'
-        }
-    }
+export function createTreeUIOptions<D>(
+    rawOpts: TreeUIOptions<D> = {}
+): TreeUIOptionsInternal<D> {
+    const opts = defaults({}, rawOpts, defaultUIOptions) as TreeUIOptions<D>;
 
-    return defaults({}, rawOpts, defaultUIOptions)
+    return {
+        ...opts,
+        levelPadding: cbOrSnapshot<ILevelPaddingFn<D>, number>(
+            opts.levelPadding!,
+            (padding) => (node: TreeNode<D>) =>
+                `${padding + padding * (node.level - 1)}px`
+        ),
+        allowDrag: opts.allowDrag!,
+        allowDrop: opts.allowDrop!,
+        nodeClass: cbOrSnapshot<INodeClassFn<D>>(opts.nodeClass!),
+        useVirtualScroll: opts.useVirtualScroll!,
+    };
 }
 
-export type CustomFieldPrefix = 'id' | 'children' | 'display' | 'isExpanded'
-export type CustomFieldNames = `${CustomFieldPrefix}Field`
+export type CustomFieldPrefix = keyof TreeDataOptions['accessors'];
+export type CustomFieldNames = `${CustomFieldPrefix}Field`;
 
-export interface TreeDataOptions {
+export type NodeDataAccessorPair<D, T> = [
+    get: (data: D) => T,
+    set: (data: D, value: T) => void
+];
+export type NodeDataAccessor<D, T> =
+    // field name or getset tuple, must have setter
+    | NodeDataAccessorWithSetter<D,T>
+    // getset tuple, but setter omitted
+    | [get: NodeDataAccessorPair<D, T>[0]]
+    // just getter function
+    | NodeDataAccessorPair<D, T>[0];
+export type NodeDataAccessorWithSetter<D,T> =
+    // Field name
+    | string
+    // getset tuple
+    | NodeDataAccessorPair<D, T>;
+
+function accessorPair<D, T>(
+    a: NodeDataAccessor<D, T>,
+    requireSetter?: false
+): NodeDataAccessorPair<D, T>;
+function accessorPair<D, T>(
+    a: NodeDataAccessorWithSetter<D, T>,
+    requireSetter: true
+): NodeDataAccessorPair<D, T>;
+function accessorPair<D, T>(
+    a: NodeDataAccessor<D, T>,
+    requireSetter: boolean = false
+): NodeDataAccessorPair<D, T> {
+    // We get a proper field name, we can just do trivial getset
+    if (isString(a))
+        return [
+            (d: any) => d[a as string],
+            (d: any, v) => (d[a as string] = v),
+        ];
+
+    if(requireSetter && (isFunction(a) || a.length < 2)) throw new Error("Setter is required for this field")
+
+    if (isFunction(a)) a = [a];
+    if (a.length === 1) a = [a[0], () => {}];
+    return a;
+}
+
+export interface TreeDataOptions<D = any> {
+    accessors?: {
+        id?: NodeDataAccessor<D, string>;
+        children?: NodeDataAccessor<D, D[]>;
+        hasChildren?: NodeDataAccessor<D, boolean>;
+        display?: NodeDataAccessor<D, string>;
+        isExpanded?: NodeDataAccessor<D, boolean>;
+    };
     /**
      * Override children field. Default: 'children'
+     *
+     * @deprecated use {@link accessors.children} instead
      */
     childrenField?: string;
     /**
      * Override display field. Default: 'name'
+     *
+     * @deprecated use {@link accessors.display} instead
      */
     displayField?: string;
     /**
      * Override id field. Default: 'id'
+     *
+     * @deprecated use {@link accessors.id} instead
      */
     idField?: string;
     /**
      * Override isExpanded field. Default: 'isExpanded'
+     *
+     * @deprecated use {@link accessors.isExpanded} instead
      */
     isExpandedField?: string;
     /**
      * Change the default mouse and key actions on the tree
      */
-    actionMapping?: ActionMapping;
+    actionMapping?: ActionMapping<D>;
 
     /**
      * Supply function for getting fields asynchronously. Should return a Promise
      */
-    getChildren?(node: TreeNode): Promise<any[]>;
+    getChildren?(node: TreeNode<D>): Promise<D[]>;
+}
+export interface TreeDataOptionsInternal<D> extends TreeDataOptions<D> {
+    accessors: {
+        id: NodeDataAccessorPair<D, string>;
+        children: NodeDataAccessorPair<D, D[]>;
+        hasChildren: NodeDataAccessorPair<D, boolean>;
+        display: NodeDataAccessorPair<D, string>;
+        isExpanded: NodeDataAccessorPair<D, boolean>;
+    };
+    actionMapping: ActionMapping<D>;
+    getChildren(node: TreeNode<D>): Promise<D[]>;
 }
 
 /**
  * create tree options about data with defaults
  * @param rawOpts
  */
-export function createTreeDataOptions(rawOpts: TreeDataOptions = {}): TreeDataOptions {
-    return defaultsDeep({}, rawOpts, defaultDataOptions)
+export function createTreeDataOptions<D>(
+    rawOpts: TreeDataOptions<D> = {}
+): TreeDataOptionsInternal<D> {
+    const opts = defaultsDeep(
+        {},
+        rawOpts,
+        defaultDataOptions
+    ) as TreeDataOptions<D>;
+
+    return {
+        ...opts,
+        accessors: {
+            id: accessorPair(opts.idField ?? opts.accessors!.id!),
+            children: accessorPair(opts.childrenField ?? opts.accessors!.children!),
+            hasChildren: accessorPair(opts.accessors!.hasChildren!),
+            display: accessorPair(opts.displayField ?? opts.accessors!.display!),
+            isExpanded: accessorPair(opts.isExpandedField ?? opts.accessors!.isExpanded!),
+        },
+        actionMapping: opts.actionMapping!,
+        getChildren: opts.getChildren!,
+    };
 }
 
 // export const TREE_DATA_OPTIONS = new InjectionToken('TREE_DATA_OPTIONS')
+
+function cbOrSnapshot<F extends (...args: any[]) => unknown>(
+    input: F | ReturnType<F>
+): F;
+function cbOrSnapshot<F extends Function, D>(
+    input: F | D,
+    or: (data: D) => F,
+    check?: (input: F | D) => input is F
+): F;
+function cbOrSnapshot<F extends Function, D>(
+    input: F | D,
+    or: (data: D) => F = (d) => (() => d) as any,
+    check: (input: F | D) => input is F = isFunction as any
+): F {
+    if (check(input)) {
+        return input;
+    }
+    const data = input;
+    return or(data);
+}

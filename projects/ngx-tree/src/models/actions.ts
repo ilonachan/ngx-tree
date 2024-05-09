@@ -4,34 +4,34 @@ import { TreeNode } from './tree-node'
 import { ActionMapping } from './tree-options'
 
 export const TREE_ACTIONS = {
-    TOGGLE_SELECTED: (tree: TreeModel, node: TreeNode, $event: any) => node && node.toggleActivated(),
-    TOGGLE_SELECTED_MULTI: (tree: TreeModel, node: TreeNode, $event: any) => node && node.toggleActivated(true),
-    SELECT: (tree: TreeModel, node: TreeNode, $event: any) => node.setActive(true),
-    DESELECT: (tree: TreeModel, node: TreeNode, $event: any) => node.setActive(false),
-    FOCUS: (tree: TreeModel, node: TreeNode, $event: any) => node.focus(),
-    TOGGLE_EXPANDED: (tree: TreeModel, node: TreeNode, $event: any) => {
+    TOGGLE_SELECTED: (tree: TreeModel<unknown>, node: TreeNode<unknown>, $event: any) => node && node.toggleActivated(),
+    TOGGLE_SELECTED_MULTI: (tree: TreeModel<unknown>, node: TreeNode<unknown>, $event: any) => node && node.toggleActivated(true),
+    SELECT: (tree: TreeModel<unknown>, node: TreeNode<unknown>, $event: any) => node.setActive(true),
+    DESELECT: (tree: TreeModel<unknown>, node: TreeNode<unknown>, $event: any) => node.setActive(false),
+    FOCUS: (tree: TreeModel<unknown>, node: TreeNode<unknown>, $event: any) => node.focus(),
+    TOGGLE_EXPANDED: (tree: TreeModel<unknown>, node: TreeNode<unknown>, $event: any) => {
         $event.stopPropagation()
 
         return node.hasChildren && node.toggleExpanded()
     },
-    EXPAND: (tree: TreeModel, node: TreeNode, $event: any) => node.expand(),
-    COLLAPSE: (tree: TreeModel, node: TreeNode, $event: any) => node.collapse(),
-    DRILL_DOWN: (tree: TreeModel, node: TreeNode, $event: any) => tree.focusDrillDown(),
-    DRILL_UP: (tree: TreeModel, node: TreeNode, $event: any) => tree.focusDrillUp(),
-    NEXT_NODE: (tree: TreeModel, node: TreeNode, $event: any) => tree.focusNextNode(),
-    PREVIOUS_NODE: (tree: TreeModel, node: TreeNode, $event: any) => tree.focusPreviousNode(),
+    EXPAND: (tree: TreeModel<unknown>, node: TreeNode<unknown>, $event: any) => node.expand(),
+    COLLAPSE: (tree: TreeModel<unknown>, node: TreeNode<unknown>, $event: any) => node.collapse(),
+    DRILL_DOWN: (tree: TreeModel<unknown>, node: TreeNode<unknown>, $event: any) => tree.focusDrillDown(),
+    DRILL_UP: (tree: TreeModel<unknown>, node: TreeNode<unknown>, $event: any) => tree.focusDrillUp(),
+    NEXT_NODE: (tree: TreeModel<unknown>, node: TreeNode<unknown>, $event: any) => tree.focusNextNode(),
+    PREVIOUS_NODE: (tree: TreeModel<unknown>, node: TreeNode<unknown>, $event: any) => tree.focusPreviousNode(),
     MOVE_NODE: (
-        tree: TreeModel,
-        node: TreeNode,
+        tree: TreeModel<unknown>,
+        node: TreeNode<unknown>,
         $event: any,
-        { from, to }: { from: TreeNode; to: { parent: TreeNode; index: number, dropOnNode: boolean } },
+        { from, to }: { from: TreeNode<unknown>; to: { parent: TreeNode<unknown>; index: number, dropOnNode: boolean } },
     ) => {
         // default action assumes from = node, to = {parent, index}
         tree.moveNode(from, to)
     },
 }
 
-export const defaultActionMapping: ActionMapping = {
+export const defaultActionMapping: ActionMapping<unknown> = {
     mouse: {
         click: TREE_ACTIONS.TOGGLE_SELECTED,
         dblClick: undefined,

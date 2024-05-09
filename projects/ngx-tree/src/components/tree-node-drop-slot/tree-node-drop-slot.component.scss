@@ -16,8 +16,9 @@
 .tree-node-drop-slot {
     display: block;
     height: 4px;
-    background-color: lightcoral;
+    // background-color: lightcoral;
     &.is-dragging-over {
+        height: 16px;
         background: #dfe;
         outline: 2px dashed #888;
     }

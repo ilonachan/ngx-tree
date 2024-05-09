@@ -7,9 +7,9 @@ import { TreeNode, TreeUIOptions } from '../../models'
     styleUrls: ['./tree-node-content.component.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class TreeNodeContentComponent {
-    @Input() options: TreeUIOptions
-    @Input() node: TreeNode
+export class TreeNodeContentComponent<D> {
+    @Input() options: TreeUIOptions<D>
+    @Input() node: TreeNode<D>
     @Input() index: number
     @Input() template: TemplateRef<any>
     @HostBinding('class.tree-node-content') className = true

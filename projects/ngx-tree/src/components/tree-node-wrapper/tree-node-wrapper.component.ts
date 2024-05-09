@@ -8,9 +8,9 @@ import { TreeVirtualScroll } from '../../services/tree-virtual-scroll.service'
     styleUrls: ['./tree-node-wrapper.component.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class TreeNodeWrapperComponent implements OnInit, OnDestroy, AfterViewInit {
-    @Input() node: TreeNode
-    @Input() options: TreeUIOptions
+export class TreeNodeWrapperComponent<D> implements OnInit, OnDestroy, AfterViewInit {
+    @Input() node: TreeNode<D>
+    @Input() options: TreeUIOptions<D>
     @Input() index: number
     @Input() templates: TreeTemplateMapping
 

@@ -80,5 +80,4 @@ export {
 }
 
 export * from './models/index'
-export * from './constants/events'
 export * from './constants/keys'

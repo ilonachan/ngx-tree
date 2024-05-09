@@ -1,17 +1,38 @@
-<ngx-tree-node *ngFor="let child of viewportNodes; let i = index; trackBy: trackNode"
-               [options]="options"
-               [ngClass]="[options.nodeClass!(child), 'tree-node-level-'+ child.level]"
-               [class.tree-node-expanded]="child.isExpanded"
-               [class.tree-node-collapsed]="child.isCollapsed"
-               [class.tree-node-leaf]="child.isLeaf"
-               [class.tree-node-active]="child.isActive"
-               [class.tree-node-focused]="child.isFocused"
-               [node]="child"
-               [index]="i"
-               [templates]="templates">
-</ngx-tree-node>
+<ng-container *ngIf="!!node.children">
+  <ngx-tree-node-drop-slot
+    *ngIf="options.allowDrop !== false"
+    [node]="node"
+    [options]="options"
+    [dropIndex]="0"
+  ></ngx-tree-node-drop-slot>
+  <ng-container
+    *ngFor="let child of viewportNodes; let i = index; trackBy: trackNode"
+  >
+    <ngx-tree-node
+      [options]="options"
+      [ngClass]="[options.nodeClass!(child), 'tree-node-level-' + child.level]"
+      [class.tree-node-expanded]="child.isExpanded"
+      [class.tree-node-collapsed]="child.isCollapsed"
+      [class.tree-node-leaf]="child.isLeaf"
+      [class.tree-node-active]="child.isActive"
+      [class.tree-node-focused]="child.isFocused"
+      [node]="child"
+      [index]="i"
+      [templates]="templates"
+    >
+    </ngx-tree-node>
+    <ngx-tree-node-drop-slot
+      *ngIf="options.allowDrop !== false"
+      [node]="node"
+      [options]="options"
+      [dropIndex]="i + 1"
+    ></ngx-tree-node-drop-slot>
+  </ng-container>
+</ng-container>
 
-<ngx-tree-loading *ngIf="!node.children"
-                  [style.padding-left]="options.levelPadding!(node)"
-                  [template]="templates.loadingTemplate"
-                  [node]="node"></ngx-tree-loading>
+<ngx-tree-loading
+  *ngIf="!node.children"
+  [style.padding-left]="options.levelPadding!(node)"
+  [template]="templates.loadingTemplate"
+  [node]="node"
+></ngx-tree-loading>
