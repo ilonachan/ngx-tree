@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
-import { TreeNode } from '@e-cloud/ngx-tree';
+import { Component, OnChanges, SimpleChanges, ViewChild } from '@angular/core';
+import { TreeNode } from '@beezeelinx/ngx-tree';
+import { TreeComponent } from 'dist/ngx-tree';
 
 @Component({
     selector: 'demo-simple',
@@ -97,6 +98,7 @@ export class SimpleComponent {
                 ],
             },
             {
+                uuid: "asyncroot",
                 name: `[${seed}]async root`,
                 hasChildren: true,
             },
@@ -210,6 +212,26 @@ export class SimpleComponent {
                 1000
             );
         });
+    }
+
+    @ViewChild('tree') tree!: TreeComponent<any>;
+
+    modifyTreeData() {
+        const asyncNode = this.tree.treeModel.getNodeById('asyncroot')!;
+        asyncNode.data.children = [
+            {
+                name: 'friend1',
+                subTitle: 'might appear',
+                hasChildren: false,
+            },
+            {
+                name: 'friend2',
+                subTitle: 'when you need them',
+                hasChildren: false,
+            },
+        ];
+        asyncNode.updateChildren();
+        asyncNode.treeModel.fireEvent({eventName: 'updateNode', node: asyncNode})
     }
 
     childrenCount(node: TreeNode): string {

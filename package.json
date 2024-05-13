@@ -13,7 +13,8 @@
     "lint": "ng lint --type-check",
     "test": "ng test ngx-tree",
     "release": "standard-version -a",
-    "deploy": "npm run build && npm publish --access=public ./dist/ngx-tree --registry=https://registry.npmjs.org/"
+    "deploy": "npm run build && npm publish --access=public ./dist/ngx-tree --registry=https://registry.npmjs.org/",
+    "pack": "cd dist/ngx-tree && npm pack --pack-destination .."
   },
   "repository": {
     "type": "git",

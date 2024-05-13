@@ -23,7 +23,7 @@ import {
     styleUrls: ['./tree-node.component.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class TreeNodeComponent<D> implements OnInit, OnDestroy {
+export class TreeNodeComponent<D = any> implements OnInit, OnDestroy {
     @Input() node: TreeNode<D>;
     @Input() options: TreeUIOptionsInternal<D>;
     @Input() index: number;
@@ -42,7 +42,7 @@ export class TreeNodeComponent<D> implements OnInit, OnDestroy {
                 (isFunction(this.options.allowDrop)
                     ? this.options.allowDrop(
                           node,
-                          { parent: this.node },
+                          { parent: this.node, dropOnNode: true },
                           $event
                       )
                     : this.options.allowDrop)
@@ -58,12 +58,26 @@ export class TreeNodeComponent<D> implements OnInit, OnDestroy {
                 this.node.treeModel.events.activate,
                 this.node.treeModel.events.deactivate,
                 this.node.treeModel.events.focus,
-                this.node.treeModel.events.blur
+                this.node.treeModel.events.blur,
+                this.node.treeModel.events.updateNode,
             ).subscribe((evt) => {
                 if (evt.node && evt.node === this.node) {
                     this.cdRef.markForCheck();
                 }
             });
+            this.node.treeModel.events.updateNode.subscribe((e) => {
+                if(e.node === this.node) {
+                    console.log(e);
+                    console.log(e.node.visibleChildren);
+                    this.cdRef.markForCheck();
+                }
+            })
+        }
+    }
+
+    ngOnChanges(changes: SimpleChanges) {
+        if('node' in changes) {
+            // console.log(changes.node.currentValue);
         }
     }
 
@@ -121,7 +135,7 @@ export const EXPANSION_PANEL_ANIMATION_TIMING =
     ],
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class TreeNodeChildrenComponent<D>
+export class TreeNodeChildrenComponent<D = any>
     implements OnInit, OnChanges, OnDestroy
 {
     marginTop = 0;

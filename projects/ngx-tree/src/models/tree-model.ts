@@ -7,7 +7,7 @@ import last from 'lodash-es/last';
 import { Observer, Subject } from 'rxjs';
 import { EventType, EventsMap, TREE_EVENTS, TreeEvent, TreeMoveNodeEvent, TreeNodeEvent, TreeToggleExpanderEvent } from './events';
 import { TreeNode, VirtualTreeNode } from './tree-node';
-import { createTreeDataOptions, TreeDataOptions } from './tree-options';
+import { createTreeDataOptions, DropTarget, TreeDataOptions } from './tree-options';
 
 export interface ScrollIntoViewTarget<D> {
     node: TreeNode<D>;
@@ -329,7 +329,7 @@ export class TreeModel<D = any> {
      */
     focusNextNode() {
         const previousNode: TreeNode<D> | null = this.focusedNode;
-        const nextNode: TreeNode<D> | null = previousNode
+        const nextNode: any = previousNode
             ? previousNode.findNextNode(true, true)
             : this.getFirstRoot(true);
         if (nextNode) {
@@ -342,7 +342,7 @@ export class TreeModel<D = any> {
      */
     focusPreviousNode() {
         const previousNode = this.focusedNode;
-        const nextNode = previousNode
+        const nextNode: any = previousNode
             ? previousNode.findPreviousNode(true)
             : this.getLastRoot(true);
         if (nextNode) {
@@ -362,7 +362,7 @@ export class TreeModel<D = any> {
         ) {
             previousNode.toggleExpanded();
         } else {
-            const nextNode = previousNode
+            const nextNode: any = previousNode
                 ? previousNode.getFirstChild(true)
                 : this.getFirstRoot(true);
             if (nextNode) {
@@ -472,7 +472,7 @@ export class TreeModel<D = any> {
      */
     moveNode(
         node: TreeNode<D>,
-        to: { parent: TreeNode<D>; index: number; dropOnNode: boolean }
+        to: DropTarget<D>
     ) {
         const fromIndex = node.index;
         const fromParent = node.parent;
@@ -568,7 +568,7 @@ export class TreeModel<D = any> {
 function canMoveNode<D>(
     node: TreeNode<D>,
     fromIndex: number,
-    to: { parent: TreeNode<D>; index: number }
+    to: DropTarget<D>
 ) {
     // same node:
     if (node.parent === to.parent && fromIndex === to.index) {

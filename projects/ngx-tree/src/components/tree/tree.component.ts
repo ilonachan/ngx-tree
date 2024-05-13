@@ -26,6 +26,9 @@ import {
     EventsMap,
     TREE_EVENTS,
     TreeUIOptionsInternal,
+    TreeNodeEvent,
+    TreeToggleExpanderEvent,
+    TreeMoveNodeEvent,
 } from '../../models';
 import { TreeDraggingTargetService } from '../../services/tree-dragging-target.service';
 // import { TreeNodeChildrenComponent } from '../tree-node-children/tree-node-children.component'
@@ -68,19 +71,20 @@ export class TreeComponent<D> implements OnChanges, OnDestroy {
     @Input() enableAnimation = true;
     @Input() keepNodesExpanded = false;
 
-    @Output() expand = new EventEmitter<TreeEvent>();
-    @Output() collapse = new EventEmitter<TreeEvent>();
-    @Output() toggleExpander = new EventEmitter<TreeEvent>();
-    @Output() activate = new EventEmitter<TreeEvent>();
-    @Output() deactivate = new EventEmitter<TreeEvent>();
-    @Output() focus = new EventEmitter<TreeEvent>();
-    @Output() blur = new EventEmitter<TreeEvent>();
+    @Output() expand = new EventEmitter<TreeNodeEvent<D>>();
+    @Output() collapse = new EventEmitter<TreeNodeEvent<D>>();
+    @Output() toggleExpander = new EventEmitter<TreeToggleExpanderEvent<D>>();
+    @Output() activate = new EventEmitter<TreeNodeEvent<D>>();
+    @Output() deactivate = new EventEmitter<TreeNodeEvent<D>>();
+    @Output() focus = new EventEmitter<TreeNodeEvent<D>>();
+    @Output() blur = new EventEmitter<TreeNodeEvent<D>>();
     @Output() initialized = new EventEmitter<TreeEvent>();
-    @Output() moveNode = new EventEmitter<TreeEvent>();
-    @Output() loadChildren = new EventEmitter<TreeEvent>();
+    @Output() moveNode = new EventEmitter<TreeMoveNodeEvent<D>>();
+    @Output() loadChildren = new EventEmitter<TreeNodeEvent<D>>();
     @Output() changeFilter = new EventEmitter<TreeEvent>();
-    @Output() addNode = new EventEmitter<TreeEvent>();
-    @Output() removeNode = new EventEmitter<TreeEvent>();
+    @Output() addNode = new EventEmitter<TreeNodeEvent<D>>();
+    @Output() removeNode = new EventEmitter<TreeNodeEvent<D>>();
+    @Output() updateNode = new EventEmitter<TreeNodeEvent<D>>();
 
     @HostBinding('class.ngx-tree') className = true;
 

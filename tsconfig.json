@@ -25,7 +25,7 @@
       "node_modules/@types"
     ],
     "paths": {
-      "@e-cloud/ngx-tree": [
+      "@beezeelinx/ngx-tree": [
         "projects/ngx-tree/src/ngx-tree.module.ts"
       ],
       "core-js/es7/reflect": ["node_modules/core-js/proposals/reflect-metadata"],

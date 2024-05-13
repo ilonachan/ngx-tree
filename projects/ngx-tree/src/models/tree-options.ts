@@ -10,9 +10,9 @@ import { isFunction, isString } from 'lodash-es';
 /**
  * common functions to handle tree actions
  */
-export interface ActionHandler<D, T = any> {
+export interface ActionHandler<D, T = any, Args extends any[] = []> {
     // eslint-disable-next-line @typescript-eslint/prefer-function-type
-    (tree: TreeModel<D>, node: TreeNode<D>, $event: T, ...args: any[]): void;
+    (tree: TreeModel<D>, node: TreeNode<D>, $event: T, ...args: Args): void;
 }
 
 /**
@@ -24,13 +24,13 @@ export interface ActionMapping<D> {
         dblClick?: ActionHandler<D, MouseEvent>;
         contextMenu?: ActionHandler<D, MouseEvent>;
         expanderClick?: ActionHandler<D, MouseEvent>;
-        dragStart?: ActionHandler<D, DragAndDropEvent<D>>;
-        drag?: ActionHandler<D, DragAndDropEvent<D>>;
-        dragEnd?: ActionHandler<D, DragAndDropEvent<D>>;
-        dragOver?: ActionHandler<D, DragAndDropEvent<D>>;
-        dragLeave?: ActionHandler<D, DragAndDropEvent<D>>;
-        dragEnter?: ActionHandler<D, DragAndDropEvent<D>>;
-        drop?: ActionHandler<D, DragAndDropEvent<D>>;
+        dragStart?: ActionHandler<D, DragEvent, [DragAndDropEvent<D>]>;
+        drag?: ActionHandler<D, DragEvent, [DragAndDropEvent<D>]>;
+        dragEnd?: ActionHandler<D, DragEvent, [DragAndDropEvent<D>]>;
+        dragOver?: ActionHandler<D, DragEvent, [DragAndDropEvent<D>]>;
+        dragLeave?: ActionHandler<D, DragEvent, [DragAndDropEvent<D>]>;
+        dragEnter?: ActionHandler<D, DragEvent, [DragAndDropEvent<D>]>;
+        drop?: ActionHandler<D, DragEvent, [DragAndDropEvent<D>]>;
     };
     keys?: {
         [key: number]: ActionHandler<D, KeyboardEvent>;
@@ -48,6 +48,7 @@ export type AvailableMouseEvents = keyof Exclude<
 export interface DropTarget<D> {
     parent: TreeNode<D>;
     index?: number;
+    dropOnNode: boolean;
 }
 
 export type IAllowDropFn<D> = (

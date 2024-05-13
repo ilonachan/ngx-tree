@@ -1,5 +1,5 @@
 import { Component } from '@angular/core'
-import { TREE_ACTIONS, TreeDataOptions, TreeNode, TreeUIOptions } from '@e-cloud/ngx-tree'
+import { TREE_ACTIONS, TreeDataOptions, TreeNode, TreeUIOptions } from '@beezeelinx/ngx-tree'
 
 @Component({
     selector: 'demo-full-width-item',

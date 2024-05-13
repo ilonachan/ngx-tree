@@ -16,6 +16,11 @@ import {
     TreeDataOptions,
 } from './tree-options';
 
+/**
+ * Wrapper object for every tree node, replicating the structure defined by the data objects.
+ * Provides required and useful features for querying/manipulating the tree nodes and model,
+ * as well as references to the actual HTML elements.
+ */
 export class TreeNode<D = any> {
     /**
      * The children of the node.
@@ -148,7 +153,7 @@ export class TreeNode<D = any> {
         }
 
         if (this.getField('children')) {
-            this.initChildren();
+            this.updateChildren();
         }
     }
 
@@ -169,7 +174,8 @@ export class TreeNode<D = any> {
 
     onDrop($event: DragAndDropEvent<D>) {
         this.mouseAction('drop', $event.event, {
-            from: $event.from,
+            ...$event,
+            // should already be correct, just to be safe
             to: { parent: this, index: 0, dropOnNode: true },
         });
     }
@@ -267,7 +273,7 @@ export class TreeNode<D = any> {
             .then((children) => {
                 if (children) {
                     this.setField('children', children);
-                    this.initChildren();
+                    this.updateChildren();
                 }
             })
             .then(() => {
@@ -511,7 +517,11 @@ export class TreeNode<D = any> {
         });
     }
 
-    protected initChildren() {
+    /**
+     * Regenerate the tree structure. This might need to be called when the data structure's
+     * `children` field value changes, to notify the tree of this change.
+     */
+    public updateChildren() {
         this.children = this.getField('children').map(
             (data: any, index: number) =>
                 new TreeNode(data, this, this.treeModel, index)
@@ -551,7 +561,7 @@ export class VirtualTreeNode<D> extends TreeNode<D> {
         this.setField('children', children);
 
 
-        if(children) this.initChildren();
+        if(children) this.updateChildren();
 
     }
 

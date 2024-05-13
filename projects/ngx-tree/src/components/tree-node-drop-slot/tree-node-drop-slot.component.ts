@@ -41,15 +41,13 @@ export class TreeNodeDropSlotComponent<D> {
                     {
                         parent: this.node,
                         index: this.dropIndex,
+                        dropOnNode: false,
                     },
                     $event
                 )
             : this.options.allowDrop);
 
     onDrop($event: DragAndDropEvent<D>) {
-        this.node.mouseAction('drop', $event.event, {
-            from: $event.from,
-            to: $event.to,
-        });
+        this.node.mouseAction('drop', $event.event, $event);
     }
 }

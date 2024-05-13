@@ -16,6 +16,7 @@ export const TREE_EVENTS = {
     changeFilter: 'changeFilter',
     removeNode: 'removeNode',
     addNode: 'addNode',
+    updateNode: 'updateNode',
 } as const;
 
 /**
@@ -29,20 +30,20 @@ export interface TreeEvent {
 /**
  * An event fired when anything happens to a node.
  */
-export interface TreeNodeEvent<D> extends TreeEvent {
+export interface TreeNodeEvent<D = any> extends TreeEvent {
     node: TreeNode<D>;
 }
 /**
  * An event fired when the expander of a node is toggled, reporting the new state of the expander.
  */
-export interface TreeToggleExpanderEvent<D> extends TreeNodeEvent<D> {
+export interface TreeToggleExpanderEvent<D = any> extends TreeNodeEvent<D> {
     eventName: (typeof TREE_EVENTS)['toggleExpander'];
     isExpanded: boolean;
 }
 /**
  *
  */
-export interface TreeMoveNodeEvent<D> extends TreeNodeEvent<D> {
+export interface TreeMoveNodeEvent<D = any> extends TreeNodeEvent<D> {
     eventName: (typeof TREE_EVENTS)['moveNode'];
     to: { parent: TreeNode<D>; index: number };
 }
@@ -50,7 +51,7 @@ export interface TreeMoveNodeEvent<D> extends TreeNodeEvent<D> {
 /**
  * An event fired when a Drag&Drop action occurs
  */
-export interface DragAndDropEvent<D> {
+export interface DragAndDropEvent<D = any> {
     /**
      * The original mouse event
      */
@@ -92,7 +93,8 @@ export interface EventsMap<D> {
     changeFilter: EventEmitter<TreeEvent>;
     removeNode: EventEmitter<TreeNodeEvent<D>>;
     addNode: EventEmitter<TreeNodeEvent<D>>;
+    updateNode: EventEmitter<TreeNodeEvent<D>>;
 }
 
-export type EventType<D, name extends keyof EventsMap<D>> =
+export type EventType<name extends keyof EventsMap<D>, D = any> =
     EventsMap<D>[name] extends EventEmitter<infer E> ? E : never;

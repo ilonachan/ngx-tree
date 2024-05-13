@@ -1,7 +1,8 @@
 import { NUMBER_KEYS } from '../constants/keys'
+import { DragAndDropEvent } from './events'
 import { TreeModel } from './tree-model'
 import { TreeNode } from './tree-node'
-import { ActionMapping } from './tree-options'
+import { ActionMapping, DropTarget } from './tree-options'
 
 export const TREE_ACTIONS = {
     TOGGLE_SELECTED: (tree: TreeModel<unknown>, node: TreeNode<unknown>, $event: any) => node && node.toggleActivated(),
@@ -24,7 +25,7 @@ export const TREE_ACTIONS = {
         tree: TreeModel<unknown>,
         node: TreeNode<unknown>,
         $event: any,
-        { from, to }: { from: TreeNode<unknown>; to: { parent: TreeNode<unknown>; index: number, dropOnNode: boolean } },
+        { from, to }: DragAndDropEvent<unknown>,
     ) => {
         // default action assumes from = node, to = {parent, index}
         tree.moveNode(from, to)

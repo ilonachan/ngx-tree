@@ -10,7 +10,7 @@ import {
     Renderer2,
 } from '@angular/core';
 import isFunction from 'lodash-es/isFunction';
-import { DragAndDropEvent, TreeNode } from '../models';
+import { DragAndDropEvent, DropTarget, TreeNode } from '../models';
 import { TreeDraggingTargetService } from '../services/tree-dragging-target.service';
 
 const DRAG_OVER_CLASS = 'is-dragging-over';
@@ -25,8 +25,7 @@ export type AllowDropPredicate<D> = (
     selector: '[ngxTreeDrop]',
 })
 export class TreeDropDirective<D> implements OnDestroy {
-    @Input('ngxTreeDropTarget') target: TreeNode<D> | null;
-    @Input('ngxTreeDropIndex') index?: number;
+    @Input('ngxTreeDropTarget') target: DropTarget<D> | null;
 
     @Output('ngxTreeDrop') onDrop$ = new EventEmitter<DragAndDropEvent<D>>();
     @Output('treeDropDragOver') onDragOver$ =
@@ -68,7 +67,7 @@ export class TreeDropDirective<D> implements OnDestroy {
             event: $event,
             element: this.treeDraggedElement.get() as TreeNode<D>,
             from: this.treeDraggedElement.get() as TreeNode<D>,
-            to: { parent: this.target, index: this.index },
+            to: this.target,
         };
     }
 
