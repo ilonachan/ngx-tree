@@ -65,19 +65,6 @@ export class TreeNodeComponent<D = any> implements OnInit, OnDestroy {
                     this.cdRef.markForCheck();
                 }
             });
-            this.node.treeModel.events.updateNode.subscribe((e) => {
-                if(e.node === this.node) {
-                    console.log(e);
-                    console.log(e.node.visibleChildren);
-                    this.cdRef.markForCheck();
-                }
-            })
-        }
-    }
-
-    ngOnChanges(changes: SimpleChanges) {
-        if('node' in changes) {
-            // console.log(changes.node.currentValue);
         }
     }
 
@@ -190,7 +177,7 @@ export class TreeNodeChildrenComponent<D = any>
     }
 
     ngOnChanges(changes: SimpleChanges) {
-        if ('children' in changes && changes.children.currentValue) {
+        if ('children' in changes) {
             this.viewportNodes =
                 this.virtualScroll.isDisabled() || this.refreshTree
                     ? this.children

@@ -77,9 +77,10 @@ export const defaultDataOptions: TreeDataOptions<unknown> = {
         hasChildren: 'hasChildren',
         display: 'name',
         isExpanded: 'isExpanded',
+        treeNode: [() => null as any, () => {}],
     },
     actionMapping: defaultActionMapping,
-    getChildren: (node: TreeNode<unknown>) => Promise.resolve([]),
+    fetchChildren: (node: TreeNode<unknown>) => {},
 };
 
 export interface TreeUIOptions<D = any> {
@@ -184,12 +185,12 @@ export type NodeDataAccessorPair<D, T> = [
 ];
 export type NodeDataAccessor<D, T> =
     // field name or getset tuple, must have setter
-    | NodeDataAccessorWithSetter<D,T>
+    | NodeDataAccessorWithSetter<D, T>
     // getset tuple, but setter omitted
     | [get: NodeDataAccessorPair<D, T>[0]]
     // just getter function
     | NodeDataAccessorPair<D, T>[0];
-export type NodeDataAccessorWithSetter<D,T> =
+export type NodeDataAccessorWithSetter<D, T> =
     // Field name
     | string
     // getset tuple
@@ -214,7 +215,8 @@ function accessorPair<D, T>(
             (d: any, v) => (d[a as string] = v),
         ];
 
-    if(requireSetter && (isFunction(a) || a.length < 2)) throw new Error("Setter is required for this field")
+    if (requireSetter && (isFunction(a) || a.length < 2))
+        throw new Error('Setter is required for this field');
 
     if (isFunction(a)) a = [a];
     if (a.length === 1) a = [a[0], () => {}];
@@ -222,12 +224,43 @@ function accessorPair<D, T>(
 }
 
 export interface TreeDataOptions<D = any> {
+    /**
+     * Override the field accessors used to retrieve specific tree-structure information from the user data object.
+     *
+     * These properties are either a string determining the name of the field to be read-write accessed, or a pair of
+     * getter and setter function to retrieve the value in arbitrary ways.
+     */
     accessors?: {
+        /**
+         * The node's unique ID, determined by user data. Defaults to the field `id`. If that field is not set, a random UUID will be generated.
+         */
         id?: NodeDataAccessor<D, string>;
+        /**
+         * The node's children, given as data objects. Defaults to the field `children`. Note that user changes to this property
+         * can't be automatically tracked, so the tree node's {@link TreeNode.updateChildren `updateChildren`} method needs to be called
+         * for the view to update.
+         */
         children?: NodeDataAccessor<D, D[]>;
+        /**
+         * Whether the tree node is expected to have children, in case the `children` property returns `undefined`. This is used
+         * to determine which nodes may be lazy-loaded, and should therefore be expandable even while currently not having any children.
+         * Defaults to the field `hasChildren`.
+         */
         hasChildren?: NodeDataAccessor<D, boolean>;
+        /**
+         * A display name for the node, used in the default display template. Defaults to the field `display`.
+         */
         display?: NodeDataAccessor<D, string>;
+        /**
+         * Whether the node should start out in its expanded state. Defaults to the field `isExpanded`.
+         */
+        // TODO: make this an informative property as well, i.e. set it to the node's current expansion state.
         isExpanded?: NodeDataAccessor<D, boolean>;
+        /**
+         * Backreference to the internal wrapper object around the user data object; this is useful, for example, to allow the data object to notify the
+         * tree node of changes. The getter functionality is never used. Unlike the other properties, this defaults to having no effect at all.
+         */
+        treeNode?: NodeDataAccessorWithSetter<D, TreeNode<D>>;
     };
     /**
      * Override children field. Default: 'children'
@@ -260,8 +293,16 @@ export interface TreeDataOptions<D = any> {
 
     /**
      * Supply function for getting fields asynchronously. Should return a Promise
+     *
+     * @deprecated use {@link fetchChildren} instead
      */
     getChildren?(node: TreeNode<D>): Promise<D[]>;
+    /**
+     * Supply function called when a lazy-loaded node is expanded (i.e. `hasChildren == true` and `children == undefined`).
+     * If the function returns a list of children (as data objects), the node's `children` accessor
+     * will be set to this value and the tree updated.
+     */
+    fetchChildren?(node: TreeNode<D>): Promise<D[] | undefined | void> | undefined | void;
 }
 export interface TreeDataOptionsInternal<D> extends TreeDataOptions<D> {
     accessors: {
@@ -270,9 +311,10 @@ export interface TreeDataOptionsInternal<D> extends TreeDataOptions<D> {
         hasChildren: NodeDataAccessorPair<D, boolean>;
         display: NodeDataAccessorPair<D, string>;
         isExpanded: NodeDataAccessorPair<D, boolean>;
+        treeNode: NodeDataAccessorPair<D, TreeNode<D>>;
     };
     actionMapping: ActionMapping<D>;
-    getChildren(node: TreeNode<D>): Promise<D[]>;
+    fetchChildren?(node: TreeNode<D>): Promise<D[] | void> | void;
 }
 
 /**
@@ -292,13 +334,20 @@ export function createTreeDataOptions<D>(
         ...opts,
         accessors: {
             id: accessorPair(opts.idField ?? opts.accessors!.id!),
-            children: accessorPair(opts.childrenField ?? opts.accessors!.children!),
+            children: accessorPair(
+                opts.childrenField ?? opts.accessors!.children!
+            ),
             hasChildren: accessorPair(opts.accessors!.hasChildren!),
-            display: accessorPair(opts.displayField ?? opts.accessors!.display!),
-            isExpanded: accessorPair(opts.isExpandedField ?? opts.accessors!.isExpanded!),
+            display: accessorPair(
+                opts.displayField ?? opts.accessors!.display!
+            ),
+            isExpanded: accessorPair(
+                opts.isExpandedField ?? opts.accessors!.isExpanded!
+            ),
+            treeNode: accessorPair(opts.accessors!.treeNode!),
         },
         actionMapping: opts.actionMapping!,
-        getChildren: opts.getChildren!,
+        fetchChildren: opts.getChildren ?? opts.fetchChildren! ,
     };
 }
 

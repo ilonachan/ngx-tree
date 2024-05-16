@@ -142,6 +142,8 @@ export class TreeNode<D = any> {
          */
         public index: number
     ) {
+        this.setField('treeNode', this);
+
         // Make sure there's a unique id without overriding existing ids to work with immutable data structures
         if (this.id === undefined || this.id === null) {
             this.id = uuid();
@@ -263,13 +265,13 @@ export class TreeNode<D = any> {
 
     // helper methods:
     loadChildren() {
-        if (!this.options.getChildren) {
+        if (!this.options.fetchChildren) {
             return Promise.resolve(); // Not getChildren method - for using redux
         }
 
         this.loadingChildren = true;
 
-        return Promise.resolve(this.options.getChildren(this))
+        return Promise.resolve(this.options.fetchChildren(this))
             .then((children) => {
                 if (children) {
                     this.setField('children', children);
@@ -492,6 +494,7 @@ export class TreeNode<D = any> {
             this.treeModel.setExpandedNodeInPlace(node, false);
         }
 
+        node.setField('treeNode', undefined);
         // node.treeModel = null as any
         node.elementRef = null;
     }
@@ -526,6 +529,7 @@ export class TreeNode<D = any> {
             (data: any, index: number) =>
                 new TreeNode(data, this, this.treeModel, index)
         );
+        this.treeModel.fireEvent({ eventName: TREE_EVENTS.updateNode, node: this });
     }
 
     private getLastOpenDescendant(skipHidden = false): TreeNode<D> {

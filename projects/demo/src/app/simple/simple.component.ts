@@ -231,7 +231,6 @@ export class SimpleComponent {
             },
         ];
         asyncNode.updateChildren();
-        asyncNode.treeModel.fireEvent({eventName: 'updateNode', node: asyncNode})
     }
 
     childrenCount(node: TreeNode): string {
