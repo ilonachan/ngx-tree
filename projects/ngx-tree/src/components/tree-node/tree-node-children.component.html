@@ -11,7 +11,8 @@
   >
     <ngx-tree-node
       [options]="options"
-      [ngClass]="[options.nodeClass!(child), 'tree-node-level-' + child.level]"
+      [ngStyle]="options.nodeStyle(child)"
+      [ngClass]="[options.nodeClass(child), 'tree-node-level-' + child.level]"
       [class.tree-node-expanded]="child.isExpanded"
       [class.tree-node-collapsed]="child.isCollapsed"
       [class.tree-node-leaf]="child.isLeaf"

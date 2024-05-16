@@ -29,6 +29,7 @@ import {
     TreeNodeEvent,
     TreeToggleExpanderEvent,
     TreeMoveNodeEvent,
+    TreeUIOptions,
 } from '../../models';
 import { TreeDraggingTargetService } from '../../services/tree-dragging-target.service';
 // import { TreeNodeChildrenComponent } from '../tree-node-children/tree-node-children.component'
@@ -67,7 +68,8 @@ export class TreeComponent<D> implements OnChanges, OnDestroy {
     @Input() useVirtualScroll: boolean;
     @Input() referenceItemHeight: number;
     @Input() auditViewportUpdate?: number;
-    @Input() nodeClass: (node: TreeNode<D>) => string;
+    @Input() nodeClass: TreeUIOptions['nodeClass'];
+    @Input() nodeStyle: TreeUIOptions['nodeStyle'];
     @Input() enableAnimation = true;
     @Input() keepNodesExpanded = false;
 
@@ -173,6 +175,7 @@ export class TreeComponent<D> implements OnChanges, OnDestroy {
                 referenceItemHeight: this.referenceItemHeight,
                 auditViewportUpdate: this.auditViewportUpdate,
                 nodeClass: this.nodeClass,
+                nodeStyle: this.nodeStyle,
             });
         }
     }

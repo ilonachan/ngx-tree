@@ -60,7 +60,8 @@ export type IAllowDropFn<D> = (
 export type IAllowDragFn<D> = (node: TreeNode<D>) => boolean;
 
 export type ILevelPaddingFn<D> = (node: TreeNode<D>) => string;
-export type INodeClassFn<D> = (node: TreeNode<D>) => string;
+export type INodeClassFn<D> = (node: TreeNode<D>) => string | string[];
+export type INodeStyleFn<D> = (node: TreeNode<D>) => {[key: string]: any};
 
 export const defaultUIOptions: TreeUIOptions<unknown> = {
     allowDrag: false,
@@ -68,6 +69,7 @@ export const defaultUIOptions: TreeUIOptions<unknown> = {
     levelPadding: 0,
     useVirtualScroll: false,
     nodeClass: '',
+    nodeStyle: {},
 };
 
 export const defaultDataOptions: TreeDataOptions<unknown> = {
@@ -142,7 +144,11 @@ export interface TreeUIOptions<D = any> {
     /**
      * Supply function for getting a custom class for the node component
      */
-    nodeClass?: string | INodeClassFn<D>;
+    nodeClass?: INodeClassFn<D> | ReturnType<INodeClassFn<D>>;
+    /**
+     * Supply function for getting custom styles for the node component
+     */
+    nodeStyle?: INodeStyleFn<D> | ReturnType<INodeStyleFn<D>>;
 }
 
 export interface TreeUIOptionsInternal<D> extends TreeUIOptions<D> {
@@ -150,6 +156,7 @@ export interface TreeUIOptionsInternal<D> extends TreeUIOptions<D> {
     allowDrop: IAllowDropFn<D> | boolean;
     levelPadding: ILevelPaddingFn<D>;
     nodeClass: INodeClassFn<D>;
+    nodeStyle: INodeStyleFn<D>;
     useVirtualScroll: boolean;
 }
 
@@ -172,6 +179,7 @@ export function createTreeUIOptions<D>(
         allowDrag: opts.allowDrag!,
         allowDrop: opts.allowDrop!,
         nodeClass: cbOrSnapshot<INodeClassFn<D>>(opts.nodeClass!),
+        nodeStyle: cbOrSnapshot<INodeStyleFn<D>>(opts.nodeStyle!),
         useVirtualScroll: opts.useVirtualScroll!,
     };
 }

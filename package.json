@@ -5,7 +5,7 @@
   "scripts": {
     "build": "ng build ngx-tree",
     "build:demo": "ng build demo --base-href /ngx-tree/docs/demo/ -c production",
-    "start": "ng serve -o demo",
+    "start": "ng serve demo",
     "docs": "npm run docs:build",
     "docs:build": "compodoc -p projects/ngx-tree/tsconfig.doc.json -n ngx-tree -d dist/docs --hideGenerator",
     "docs:serve": "npm run docs:build -- -s",

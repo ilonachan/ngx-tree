@@ -1,6 +1,5 @@
 import { Component, OnChanges, SimpleChanges, ViewChild } from '@angular/core';
-import { TreeNode } from '@beezeelinx/ngx-tree';
-import { TreeComponent } from 'dist/ngx-tree';
+import { TreeComponent, TreeDataOptions, TreeNode, TreeUIOptions } from '@beezeelinx/ngx-tree';
 
 @Component({
     selector: 'demo-simple',
@@ -23,7 +22,7 @@ export class SimpleComponent {
         },
     ];
 
-    customOptions = {
+    customOptions: TreeDataOptions & TreeUIOptions = {
         accessors: {
             isExpanded: 'expanded',
             id: 'uuid',
@@ -32,7 +31,7 @@ export class SimpleComponent {
         // isExpandedField: 'expanded',
         // idField: 'uuid',
         getChildren: this.getChildren.bind(this),
-        useVirtualScroll: true,
+        useVirtualScroll: false,
         referenceItemHeight: 22,
         auditViewportUpdate: 0,
         allowDrag: (from) => {
@@ -51,6 +50,14 @@ export class SimpleComponent {
 
             return true;
         },
+
+        nodeClass: (node) => 'test-node-class',
+        nodeStyle: (node) => {
+            return {
+                'color': 'orange',
+                '--color': ['red','green','blue'][node.level%3]
+            }
+        }
     };
 
     constructor() {
