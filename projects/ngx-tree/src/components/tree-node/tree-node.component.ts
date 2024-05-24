@@ -13,7 +13,6 @@ import { merge, Subscription } from 'rxjs';
 import {
     TreeNode,
     TreeTemplateMapping,
-    TreeUIOptions,
     TreeUIOptionsInternal,
 } from '../../models';
 
@@ -30,7 +29,8 @@ export class TreeNodeComponent<D = any> implements OnInit, OnDestroy {
     @Input() templates: TreeTemplateMapping;
 
     @HostBinding('class.tree-node') className = true;
-    private operationSub = Subscription.EMPTY;
+
+    private operationSub?: Subscription;
 
     constructor(private cdRef: ChangeDetectorRef) {}
 
@@ -59,7 +59,7 @@ export class TreeNodeComponent<D = any> implements OnInit, OnDestroy {
                 this.node.treeModel.events.deactivate,
                 this.node.treeModel.events.focus,
                 this.node.treeModel.events.blur,
-                this.node.treeModel.events.updateNode,
+                this.node.treeModel.events.updateNode
             ).subscribe((evt) => {
                 if (evt.node && evt.node === this.node) {
                     this.cdRef.markForCheck();
@@ -69,28 +69,18 @@ export class TreeNodeComponent<D = any> implements OnInit, OnDestroy {
     }
 
     ngOnDestroy() {
-        this.operationSub.unsubscribe();
+        this.operationSub?.unsubscribe();
     }
 
     allowDrag(node: TreeNode<D>) {
-        return isFunction(this.options.allowDrag) ? this.options.allowDrag(node) : this.options.allowDrag;
+        return isFunction(this.options.allowDrag)
+            ? this.options.allowDrag(node)
+            : this.options.allowDrag;
     }
 }
 
 import { animate, style, transition, trigger } from '@angular/animations';
-import {
-    // ChangeDetectionStrategy,
-    // ChangeDetectorRef,
-    // Component,
-    // HostBinding,
-    // Input,
-    OnChanges,
-    // OnDestroy,
-    // OnInit,
-    SimpleChanges,
-} from '@angular/core';
-// import { Subscription } from 'rxjs'
-// import { TreeNode, TreeTemplateMapping, TreeUIOptions } from '../../models'
+import { OnChanges, SimpleChanges } from '@angular/core';
 import {
     PosPair,
     TreeVirtualScroll,
@@ -150,7 +140,7 @@ export class TreeNodeChildrenComponent<D = any>
         return this.disableMarginTop ? 0 : this.marginTop;
     }
 
-    private scrollSub = Subscription.EMPTY;
+    private scrollSub?: Subscription;
 
     constructor(
         private virtualScroll: TreeVirtualScroll,
@@ -159,7 +149,7 @@ export class TreeNodeChildrenComponent<D = any>
 
     ngOnInit() {
         this.viewportNodes = this.children;
-        this.scrollSub = this.virtualScroll.waitForCollection(
+        this.scrollSub = this.virtualScroll.scrollWindowChanged$.subscribe(
             (metrics: PosPair) => {
                 if (this.node.treeModel && this.node.isExpanded) {
                     // here we directly access node's visibleChildren but not component's `children`
@@ -179,14 +169,14 @@ export class TreeNodeChildrenComponent<D = any>
     ngOnChanges(changes: SimpleChanges) {
         if ('children' in changes) {
             this.viewportNodes =
-                this.virtualScroll.isDisabled() || this.refreshTree
+                !this.virtualScroll.enabled || this.refreshTree
                     ? this.children
                     : this.viewportNodes;
         }
     }
 
     ngOnDestroy() {
-        this.scrollSub.unsubscribe();
+        this.scrollSub?.unsubscribe();
     }
 
     trackNode(index: number, node: TreeNode<D>) {
@@ -201,14 +191,7 @@ export class TreeNodeChildrenComponent<D = any>
 
         // condition on root node is because the virtual root's self height is 0
         return firstNode
-            ? Math.max(
-                  0,
-                  firstNode.position -
-                      firstNode.parent!.position -
-                      (firstNode.parent!.isRoot
-                          ? 0
-                          : this.virtualScroll.averageNodeHeight)
-              )
+            ? Math.max(0, firstNode.position - firstNode.parent!.ownBtmPos - 4 /* TODO: height of the drop zone */)
             : 0;
     }
 
@@ -221,10 +204,9 @@ export class TreeNodeChildrenComponent<D = any>
         // Look for first node that starts after the beginning of the viewport (with buffer)
         // Or that ends after the beginning of the viewport
         const firstIndex = binarySearch(nodes, (node) => {
-            return (
-                startPos <= node.position ||
-                startPos <= node.position + node.height
-            );
+            // previously: startPos <= Math.max(node.topPos, node.btmPos)
+            // Since the bottom position should always be below the top position, and will be so if the height is non-negative, this is still correct.
+            return startPos <= node.childrenBtmPos;
         });
 
         // Search for last node in the viewport using binary search
@@ -232,10 +214,7 @@ export class TreeNodeChildrenComponent<D = any>
         const lastIndex = binarySearch(
             nodes,
             (node) => {
-                return (
-                    endPos < node.position ||
-                    endPos <= node.position + node.height
-                );
+                return endPos <= node.childrenBtmPos;
             },
             firstIndex
         );

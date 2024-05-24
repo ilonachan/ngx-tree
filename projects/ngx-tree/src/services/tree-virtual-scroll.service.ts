@@ -1,138 +1,167 @@
-import { Inject, Injectable, InjectionToken } from '@angular/core'
-import { BehaviorSubject, Observer, PartialObserver, Subject, Subscription } from 'rxjs'
-import { filter, scan } from 'rxjs/operators'
-import { TreeModel, TreeNode } from '../models'
+import { Inject, Injectable, InjectionToken } from '@angular/core';
+import {
+    BehaviorSubject,
+    Observable,
+    Observer,
+    PartialObserver,
+    Subject,
+    Subscription,
+} from 'rxjs';
+import { filter, scan } from 'rxjs/operators';
+import { TreeModel, TreeNode } from '../models';
 
-const Y_OFFSET_NODE_SIZE = 3
-let id = 0
+const Y_OFFSET_NODE_SIZE = 5;
+let id = 0;
 
-export const VIRTUAL_SCROLL_NODE_HEIGHT_QUOTA = new InjectionToken('VIRTUAL_SCROLL_NODE_HEIGHT_QUOTA')
+export const VIRTUAL_SCROLL_NODE_HEIGHT_QUOTA = new InjectionToken(
+    'VIRTUAL_SCROLL_NODE_HEIGHT_QUOTA'
+);
 
 export interface PosPair {
-    startPos: number
-    endPos: number
-}
-
-function pairIsValid(input: any): input is PosPair {
-    return !!input
+    startPos: number;
+    endPos: number;
 }
 
 @Injectable()
 export class TreeVirtualScroll {
-    id: number
-    averageNodeHeight = 0
-    hasEnoughNodeHeight = false
+    averageNodeHeight = 0;
 
-    private currentViewport: ClientRect
-    private lastScrollTop = 0
-    private disabled = false
+    private currentViewport: ClientRect;
+    private lastScrollTop = 0;
+    public enabled = false;
 
-    private collectionMonitor$ = new BehaviorSubject<PosPair | null>(null)
-    private nodeHeightAnalytics$ = new Subject<number>()
+    private _overhangTop = 0;
+    private _overhangBottom = 0;
 
-    constructor(@Inject(VIRTUAL_SCROLL_NODE_HEIGHT_QUOTA) private quota: number) {
-        this.id = id++
-        this.collectAverageNodeHeight()
+    private collectionMonitor$ = new BehaviorSubject<PosPair | null>(null);
+
+    public get scrollWindowChanged$(): Observable<PosPair> {
+        return this.collectionMonitor$.pipe(filter((i) => !!i));
+    }
+
+    constructor(
+        @Inject(VIRTUAL_SCROLL_NODE_HEIGHT_QUOTA) private quota: number
+    ) {
+        this.collectAverageNodeHeight();
+    }
+
+    updateOverhang(top: number, bottom: number, noUpdate = false) {
+        this._overhangTop = top;
+        this._overhangBottom = bottom;
+        if (!noUpdate)
+            this.adjustViewport(this.currentViewport, this.lastScrollTop);
     }
 
     adjustViewport(viewport: ClientRect, scrollTop: number) {
-        this.lastScrollTop = scrollTop
-        this.currentViewport = viewport
+        this.lastScrollTop = scrollTop;
+        this.currentViewport = viewport;
 
-        const Y_OFFSET = this.averageNodeHeight * Y_OFFSET_NODE_SIZE
-
-        const startPos = scrollTop > Y_OFFSET ? scrollTop - Y_OFFSET : 0
-        const endPos = viewport.height + scrollTop + Y_OFFSET
+        const startPos = Math.max(scrollTop - this._overhangTop, 0);
+        const endPos = viewport.height + scrollTop + this._overhangBottom;
 
         this.collectionMonitor$.next({
             startPos,
             endPos,
-        })
-    }
-
-    waitForCollection(observer: any): Subscription {
-        return this.collectionMonitor$
-            .pipe(filter(pairIsValid))
-            .subscribe(observer)
-    }
-
-    reportNodeHeight(data: number) {
-        this.nodeHeightAnalytics$.next(data)
+        });
     }
 
     reCalcPositions(treeModel: TreeModel<unknown>) {
         // here we reset the root nodes' positions to properly recalculate the positions
         // after some actions like filter
-        treeModel.roots.forEach(node => {
-            node.position = 0
-        })
-        treeModel.virtualRoot.height = this.getPositionAfter(treeModel.getVisibleRoots(), 0)
+
+        this.recalcNodePosTotalHeight(treeModel.virtualRoot, 0);
     }
 
-    setDisabled(isDisabled: boolean) {
-        this.disabled = isDisabled
-    }
-
-    isDisabled() {
-        return this.disabled
-    }
-
-    scrollIntoView(node: TreeNode<unknown>, force: boolean, scrollToMiddle = true) {
-        if (force || // force scroll to node
-            node.position < this.lastScrollTop || // node is above viewport
-            node.position + this.averageNodeHeight > this.lastScrollTop + this.currentViewport.height) { // node is below viewport
-
-            return scrollToMiddle ? node.position - this.currentViewport.height / 2 + this.averageNodeHeight : // scroll to middle
-                node.position // scroll to start
+    scrollIntoView(
+        node: TreeNode<unknown>,
+        force: boolean,
+        scrollToMiddle = true
+    ) {
+        if (
+            force || // force scroll to node
+            node.ownBtmPos < this.lastScrollTop || // node is above viewport
+            node.position > this.lastScrollTop + this.currentViewport.height // node is below viewport
+        ) {
+            return scrollToMiddle
+                ? node.position + (node.ownHeight - this.currentViewport.height) / 2 // scroll to middle
+                : node.position; // scroll to start
         }
 
-        return null
+        return null;
     }
 
-    private getPositionAfter(nodes: TreeNode<unknown>[], startPos: number) {
-        let position = startPos
+    private recalcNodePosTotalHeight(
+        node: TreeNode<unknown>,
+        startPos: number = 0
+    ) {
+        // TODO
+        const DROPZONE_HEIGHT = 4;
 
-        nodes.forEach((node) => {
-            node.position = position
-            // as node is hidden, it should play as a shadow node for it next sibling node for
-            // the proper position splitting
-            position = this.getPositionAfterNode(node, node.position, node.isHidden)
-        })
+        node.position = startPos;
+        // TODO: use the actual node height, since we have it anyway! (in fact, don't set this here!)
+        // node.ownHeight = node.isRoot ? 0 : this.averageNodeHeight;
 
-        return position
-    }
+        // TODO: maybe it's unnecessary to calculate the children heights unless they're actually needed?
+        if(node.isExpanded) {
+            node.childrenHeight = DROPZONE_HEIGHT;
+            for (let child of node.visibleChildren) {
+                this.recalcNodePosTotalHeight(
+                    child,
+                    startPos + node.ownHeight + node.childrenHeight
+                );
+                node.childrenHeight += child.height + DROPZONE_HEIGHT;
+            }
 
-    private getPositionAfterNode(node: TreeNode<unknown>, startPos: number, isPrevShadow = false) {
-        let position = isPrevShadow ? startPos : this.averageNodeHeight + startPos
-
-        if (node.children && node.isExpanded) { // TBD: consider loading component as well
-            position = this.getPositionAfter(node.visibleChildren, position)
+            // TODO: use actual loading node height
+            if (node.loadingChildren) node.childrenHeight += this.averageNodeHeight;
         }
 
-        // todo: here we assume the loading component's height is the same as averageNodeHeight
-        node.height = position - startPos + (node.loadingChildren ? this.averageNodeHeight : 0)
-
-        return position
+        node.position = startPos;
+        node.height = node.isHidden ? 0 : node.ownHeight + (node.isExpanded ? node.childrenHeight : 0);
     }
 
+    private nodeHeightAnalytics$ = new Subject<number>();
+    /**
+     * Once a node's BBox height is known, this function is called to incorporate it into the average calculation.
+     * Note that after enough height values have been collected, this function will not have any effect.
+     * TODO: that is a problem if node heights need to be fully recalculated, which may happen in general scenarios!
+     */
+    reportNodeHeight(data: number) {
+        this.nodeHeightAnalytics$.next(data);
+    }
+
+    /**
+     * Sets up a subscriber for the `nodeHeightAnalytics$`, to which new node heights are pushed.
+     * Whenever that happens, the average height of all so far encountered nodes is recalculated...
+     * unless the new average is significantly different from the old one, in which case the running
+     * average is reset to the latest height value.
+     *
+     * If the count of collected node heights exceeds a certain value (`VIRTUAL_SCROLL_NODE_HEIGHT_QUOTA`),
+     * no new node heights will be accepted, ever.
+     */
     private collectAverageNodeHeight() {
         this.nodeHeightAnalytics$
-            .pipe(scan<number, number[]>((acc, cur) => {
-                const lastAvg = acc[0] / acc[1]
-                const sum = cur + acc[0]
-                const count = acc[1] + 1
-                const avg = sum / count
-                if (avg / lastAvg > 1.5 || lastAvg / avg > 1.5) {
-                    return [cur, 1]
-                }
+            .pipe(
+                scan<number, { sum: number; count: number }>(
+                    (acc, cur) => {
+                        const lastAvg = acc.sum / acc.count;
+                        const sum = cur + acc.sum;
+                        const count = acc.count + 1;
+                        const avg = sum / count;
+                        if (avg / lastAvg > 1.5 || lastAvg / avg > 1.5) {
+                            return { sum: cur, count: 1 };
+                        }
 
-                return [sum, count]
-            }, [0, 0]))
-            .subscribe(pair => {
-                this.averageNodeHeight = pair[0] / pair[1]
-                if (pair[1] >= this.quota) {
-                    this.hasEnoughNodeHeight = true
+                        return { sum, count };
+                    },
+                    { sum: 0, count: 0 }
+                )
+            )
+            .subscribe(({ sum, count }) => {
+                this.averageNodeHeight = sum / count;
+                if (count >= this.quota) {
+                    this.nodeHeightAnalytics$.complete();
                 }
-            })
+            });
     }
 }

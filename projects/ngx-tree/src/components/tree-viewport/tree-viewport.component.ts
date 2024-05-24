@@ -36,6 +36,7 @@ export class TreeViewportComponent<D>
     @Input() enable: boolean;
     @Input() referenceItemHeight = 0;
     @Input() auditViewportUpdate?: number;
+    @Input() overhang?: [number, number];
 
     @Input() treeModel: TreeModel<D>;
 
@@ -57,7 +58,7 @@ export class TreeViewportComponent<D>
     @HostListener('scroll', ['$event'])
     onScroll(event: MouseEvent) {
         this.disableEventsWhenScrolling();
-        if (this.virtualScroll.isDisabled()) {
+        if (!this.virtualScroll.enabled) {
             return false;
         }
 
@@ -114,8 +115,8 @@ export class TreeViewportComponent<D>
 
     ngOnChanges(changes: SimpleChanges) {
         if ('treeModel' in changes) {
-            this.virtualScroll.setDisabled(!this.enable);
-            if (this.virtualScroll.isDisabled()) {
+            this.virtualScroll.enabled = this.enable;
+            if (!this.virtualScroll.enabled) {
                 if (!changes.treeModel.isFirstChange()) {
                     this.treeModel.fireEvent({
                         eventName: TREE_EVENTS.initialized,
@@ -123,6 +124,15 @@ export class TreeViewportComponent<D>
                 }
 
                 return;
+            }
+
+            if (this.overhang) {
+                console.log(this.overhang);
+                this.virtualScroll.updateOverhang(
+                    this.overhang[0],
+                    this.overhang[1],
+                    true
+                );
             }
 
             this.initEventSubscription();
@@ -149,7 +159,7 @@ export class TreeViewportComponent<D>
 
     ngAfterViewInit() {
         setTimeout(() => {
-            if (this.virtualScroll.isDisabled()) {
+            if (!this.virtualScroll.enabled) {
                 this.treeModel.fireEvent({
                     eventName: TREE_EVENTS.initialized,
                 });
@@ -211,7 +221,8 @@ export class TreeViewportComponent<D>
             this.treeModel.events.loadChildren,
             this.treeModel.events.changeFilter,
             this.treeModel.events.addNode,
-            this.treeModel.events.removeNode
+            this.treeModel.events.removeNode,
+            this.treeModel.events.updateNode
         );
 
         if (isNumber(this.auditViewportUpdate)) {
@@ -227,7 +238,7 @@ export class TreeViewportComponent<D>
     }
 
     setViewport() {
-        if (this.virtualScroll.isDisabled()) {
+        if (!this.virtualScroll.enabled) {
             return;
         }
 

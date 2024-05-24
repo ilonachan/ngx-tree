@@ -1,15 +1,16 @@
 <ngx-tree-viewport [@.disabled]="!enableAnimation || viewport.isScrolling"
                    [enable]="useVirtualScroll"
+                   [overhang]="virtualScrollOverhang"
                    [treeModel]="treeModel"
                    [referenceItemHeight]="UIOptions.referenceItemHeight"
                    [auditViewportUpdate]="UIOptions.auditViewportUpdate"
                    #viewport>
-  <div *ngIf="!viewport.virtualScroll.isDisabled()"
+  <div *ngIf="viewport.virtualScroll.enabled"
        class="height-raiser"
        [style.height.px]="treeModel?.virtualRoot?.height"></div>
   <div class="tree-root"
        [class.node-dragging]="treeDraggingTargetService.isDragging()"
-       [class.virtual-scroll-disabled]="viewport.virtualScroll.isDisabled()"
+       [class.virtual-scroll-disabled]="!viewport.virtualScroll.enabled"
        [style.transform]="'translateY(' + root.marginTop + 'px)'">
     <ngx-tree-node-children #root
                             [options]="UIOptions"

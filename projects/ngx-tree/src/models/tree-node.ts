@@ -27,14 +27,54 @@ export class TreeNode<D = any> {
      * By default is determined by 'node.data.children', unless stated otherwise in the options
      */
     children: TreeNode<D>[];
+
     /**
-     * top edge position relative to the top edge of scroll area
+     * The visual height of the node element itself, without counting children.
+     *
+     * TODO: update when clientBoundingRect changes
      */
-    position = -1;
+    public ownHeight = 0
+
     /**
-     * the visual height of the node
+     * The visual height of all the node's children (including the loading indicator) summed together.
+     *
+     * TODO: update when any of the childrens' height changes
      */
+    public childrenHeight = 0;
+
+    /**
+     * The height of the node in its current overall state. If the node is hidden due to filtering, returns 0.
+     * If the children aren't expanded, returns just `ownHeight`, otherwise adds `childrenHeight`.
+     *
+     * TODO: notify the parent if this changes
+     */
+    // get height() {
+    //     return this.isHidden ? 0 : this.ownHeight + (this.isExpanded ? this.childrenHeight : 0);
+    // }
     height = 0;
+
+    /**
+     * The node element's top edge y coordinate relative to the top edge of the scroll area.
+     *
+     * TODO: update when any of the previous siblings or the parent change in any way
+     */
+    position = 0;
+    /**
+     * The node element's own bottom edge y coordinate relative to the top edge of the scroll area.
+     * This will be above all children, and line up with the first child's `topPos` if exists, or with `childrenBtmPos` otherwise.
+     */
+    get ownBtmPos() {
+        return this.position + (this.isHidden ? 0 : this.ownHeight);
+    }
+    /**
+     * The node element's overall bottom edge y coordinate relative to the top edge of the scroll area.
+     * This will be below all children, and line up with the last child's `childrenBtmPos` value.
+     */
+    get childrenBtmPos() {
+        return this.position + this.height;
+    }
+
+
     loadingChildren = false;
     elementRef: ElementRef | null;
 

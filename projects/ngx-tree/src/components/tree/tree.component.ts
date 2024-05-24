@@ -72,6 +72,12 @@ export class TreeComponent<D> implements OnChanges, OnDestroy {
     @Input() nodeStyle: TreeUIOptions['nodeStyle'];
     @Input() enableAnimation = true;
     @Input() keepNodesExpanded = false;
+    @Input() virtualScrollOverhang: [number, number];
+
+    /**
+     * TODO
+     */
+    @Input() virtualScroll?: TreeUIOptions['virtualScroll'];
 
     @Output() expand = new EventEmitter<TreeNodeEvent<D>>();
     @Output() collapse = new EventEmitter<TreeNodeEvent<D>>();
@@ -172,6 +178,7 @@ export class TreeComponent<D> implements OnChanges, OnDestroy {
                 allowDrop: this.allowDrop,
                 levelPadding: this.levelPadding,
                 useVirtualScroll: this.useVirtualScroll,
+                virtualScrollOverhang: this.virtualScrollOverhang,
                 referenceItemHeight: this.referenceItemHeight,
                 auditViewportUpdate: this.auditViewportUpdate,
                 nodeClass: this.nodeClass,

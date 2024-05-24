@@ -31,7 +31,8 @@ export class SimpleComponent {
         // isExpandedField: 'expanded',
         // idField: 'uuid',
         getChildren: this.getChildren.bind(this),
-        useVirtualScroll: false,
+        useVirtualScroll: true,
+        virtualScrollOverhang: [50,50],
         referenceItemHeight: 22,
         auditViewportUpdate: 0,
         allowDrag: (from) => {

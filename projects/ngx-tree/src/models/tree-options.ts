@@ -128,10 +128,26 @@ export interface TreeUIOptions<D = any> {
      */
     useVirtualScroll?: boolean;
     /**
+     * How many pixels of overhang should be integrated into the virtual scroll viewport.
+     * The larger the number the less likely that fast scrolls will cause white flashes,
+     * but the more elements will be rendered.
+     */
+    virtualScrollOverhang?: [number, number];
+    /**
      * the item height in tree the virtual scrolling algorithm will refer to, not determinate
      * if user provide a proper value, it would boost the initial rendering time for tree with big dataset initially
      */
     referenceItemHeight?: number;
+
+    /**
+     * Settings for virtual scroll.
+     */
+    virtualScroll?: {
+        enabled?: boolean;
+        refItemHeight?: number;
+        overhangTop?: number;
+        overhangBottom?: number;
+    } | void;
     /**
      * an optional field to prevent repeating viewport update,
      * which is caused by some massive tree structure changes, such as `collapseAll()`, `expandAll()`
