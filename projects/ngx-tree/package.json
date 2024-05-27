@@ -1,12 +1,15 @@
 {
-  "name": "@beezeelinx/ngx-tree",
-  "version": "14.0.0",
+  "name": "@ilonachan/ngx-tree",
+  "version": "14.0.1",
   "description": "A derived version of angular-tree-component without mobx. Much Better performance.",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/beezeelinx/ngx-tree.git"
+    "url": "git+https://github.com/ilonachan/ngx-tree.git"
   },
-  "author": "BeeZeeLinx <contact@beezeelinx.com>",
+  "authors": [
+    "BeeZeeLinx <contact@beezeelinx.com>",
+    "ilonachan <nagato_ilona@proton.me>"
+  ],
   "keywords": [
     "Angular",
     "tree",
@@ -16,7 +19,7 @@
   ],
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/beezeelinx/ngx-tree/issues"
+    "url": "https://github.com/ilonachan/ngx-tree/issues"
   },
   "main": "ngx-tree.js",
   "module": "ngx-tree.js",
@@ -36,5 +39,5 @@
     "rxjs": "^7.5.0",
     "zone.js": "^0.11.4"
   },
-  "homepage": "https://github.com/beezeelinx/ngx-tree#readme"
+  "homepage": "https://github.com/ilonachan/ngx-tree#readme"
 }
