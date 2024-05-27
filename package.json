@@ -1,6 +1,6 @@
 {
-  "name": "@beezeelinx/ngx-tree",
-  "version": "14.0.0",
+  "name": "@ilonachan/ngx-tree",
+  "version": "14.0.1",
   "description": "A derived version of angular-tree-component without mobx. Much Better performance.",
   "scripts": {
     "build": "ng build ngx-tree",
@@ -20,13 +20,16 @@
     "type": "git",
     "url": "git+https://github.com/beezeelinx/ngx-tree.git"
   },
-  "author": "BeeZeeLinx <contact@beezeelinx.com>",
+  "authors": [
+    "BeeZeeLinx <contact@beezeelinx.com>",
+    "ilonachan <nagato_ilona@proton.me>"
+  ],
   "keywords": [
     "angular"
   ],
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/beezeelinx/ngx-tree/issues"
+    "url": "https://github.com/ilonachan/ngx-tree/issues"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "^14.2.10",
@@ -83,6 +86,6 @@
   "dependencies": {
     "tslib": "^2.3.0"
   },
-  "homepage": "https://github.com/beezeelinx/ngx-tree#readme",
+  "homepage": "https://github.com/ilonachan/ngx-tree#readme",
   "main": "karma.conf.js"
 }
