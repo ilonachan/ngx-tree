@@ -36,12 +36,13 @@ export class TreeNodeWrapperComponent<D> implements OnInit, OnDestroy, AfterView
 
     ngAfterViewInit() {
         if (this.virtualScroll.enabled) {
-            // this.resizeObserver.observe(this.elementRef.nativeElement);
+            this.resizeObserver.observe(this.elementRef.nativeElement);
             this.onHeightUpdate(this.elementRef.nativeElement.getBoundingClientRect().height)
         }
     }
 
     onHeightUpdate(height) {
+        if(height === 0) return;
         this.virtualScroll.reportNodeHeight(height);
         if(this.node.ownHeight !== height) {
             this.node.ownHeight = height;

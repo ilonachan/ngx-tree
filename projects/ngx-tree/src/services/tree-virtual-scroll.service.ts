@@ -1,11 +1,7 @@
 import { Inject, Injectable, InjectionToken } from '@angular/core';
 import {
-    BehaviorSubject,
-    Observable,
-    Observer,
-    PartialObserver,
+    ReplaySubject,
     Subject,
-    Subscription,
 } from 'rxjs';
 import { filter, scan } from 'rxjs/operators';
 import { TreeModel, TreeNode } from '../models';
@@ -33,11 +29,7 @@ export class TreeVirtualScroll {
     private _overhangTop = 0;
     private _overhangBottom = 0;
 
-    private collectionMonitor$ = new BehaviorSubject<PosPair | null>(null);
-
-    public get scrollWindowChanged$(): Observable<PosPair> {
-        return this.collectionMonitor$.pipe(filter((i) => !!i));
-    }
+    private scrollWindowChanged$ = new ReplaySubject<PosPair>(1);
 
     constructor(
         @Inject(VIRTUAL_SCROLL_NODE_HEIGHT_QUOTA) private quota: number
@@ -59,7 +51,7 @@ export class TreeVirtualScroll {
         const startPos = Math.max(scrollTop - this._overhangTop, 0);
         const endPos = viewport.height + scrollTop + this._overhangBottom;
 
-        this.collectionMonitor$.next({
+        this.scrollWindowChanged$.next({
             startPos,
             endPos,
         });
